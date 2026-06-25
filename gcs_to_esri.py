@@ -59,7 +59,7 @@ def project_and_standardize_cols(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     
     
 if __name__=="__main__":
-    assert os.getcwd().endswith("open_data"), "this script must be run from open_data directory!"
+    assert os.getcwd().endswith("open-data"), "this script must be run from open_data directory!"
 
     logger.add("./logs/gcs_to_esri.log", retention="6 months")
     logger.add(sys.stderr, 

@@ -1,0 +1,23 @@
+[project]
+name = "arcgis-open-data"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.uv.workspace]
+members = [
+    "calitp-data-analysis",
+     "_shared_utils",
+]
+
+[dependency-groups]
+dev = [
+    "shared-utils",
+    "calitp-data-analysis",
+]
+
+[tool.uv.sources]
+shared-utils = { workspace = true }
+calitp-data-analysis = { workspace = true }

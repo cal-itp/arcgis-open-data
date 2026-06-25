@@ -15,7 +15,7 @@ from loguru import logger
 from update_vars import OPEN_DATA_GCS, analysis_month
 
 credentials, _ = google.auth.default()
-catalog = intake.open_catalog("../_shared_utils/shared_utils/shared_data_catalog.yml")
+catalog = intake.open_catalog("./_shared_utils/shared_utils/shared_data_catalog.yml")
 
 MONTHLY_STOPS_COLS = [
     # stop by day_type, use these to aggregate metrics
