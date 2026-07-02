@@ -16,9 +16,7 @@ SHARED_GCS = "gs://calitp-analytics-data/data-analyses/shared_data/"
 
 COUNTY_POLYGONS_URL = "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/arcgis/rest/services/California_County_Boundaries/FeatureServer/0/query"
 
-CALTRANS_DISTRICTS_URL = (
-    "https://caltrans-gis.dot.ca.gov/arcgis/rest/services/CHboundary/District_Tiger_Lines/FeatureServer/0/query/"
-)
+CALTRANS_DISTRICTS_URL = "https://caltrans-gis.dot.ca.gov/arcgis/rest/services/CHboundary/District_Tiger_Lines/FeatureServer/0/query/"
 
 LEGISLATIVE_BASE = "https://services3.arcgis.com/fdvHcZVgB2QSRNkL/arcgis/rest/services/Legislative/FeatureServer/"
 
@@ -29,7 +27,9 @@ LEGISLATIVE_DICT = {
 }
 
 CALTRANS_BASE = "https://caltrans-gis.dot.ca.gov/arcgis/rest/services/CHhighway/"
-CRS_FUNCTIONAL_CLASSICIATION_URL = f"{CALTRANS_BASE}CRS_Functional_Classification/FeatureServer/0/query/"
+CRS_FUNCTIONAL_CLASSICIATION_URL = (
+    f"{CALTRANS_BASE}CRS_Functional_Classification/FeatureServer/0/query/"
+)
 SHN_LINES_URL = f"{CALTRANS_BASE}SHN_Lines/FeatureServer/0/query/"
 SHN_POSTMILES_URL = f"{CALTRANS_BASE}SHN_Postmiles_Tenth/FeatureServer/0/query/"
 
@@ -72,7 +72,9 @@ def gdf_from_esri_feature_service(url):
     return pd.concat(gdfs).reset_index(drop=True)
 
 
-def combine_legislative_districts(assembly_districts_url: str, senate_districts_url: str) -> gpd.GeoDataFrame:
+def combine_legislative_districts(
+    assembly_districts_url: str, senate_districts_url: str
+) -> gpd.GeoDataFrame:
     """
     Create a combined assembly district and senate districts
     gdf.
@@ -97,7 +99,8 @@ def combine_legislative_districts(assembly_districts_url: str, senate_districts_
 
 
 def exclude_columns(
-    gdf: gpd.GeoDataFrame, list_of_cols: list = ["objectid", "shape__area", "shape__length"]
+    gdf: gpd.GeoDataFrame,
+    list_of_cols: list = ["objectid", "shape__area", "shape__length"],
 ) -> gpd.GeoDataFrame:
     """
     Drop a couple of columns that tend to show up for ESRI.
@@ -110,7 +113,6 @@ def exclude_columns(
 
 
 if __name__ == "__main__":
-
     esri_datasets = {
         "ca_county": COUNTY_POLYGONS_URL,
         "caltrans_districts": CALTRANS_DISTRICTS_URL,
@@ -134,4 +136,6 @@ if __name__ == "__main__":
         LEGISLATIVE_DICT["ca_senate_districts"],
     )
 
-    utils.geoparquet_gcs_export(legislative_districts_gdf, SHARED_GCS, "legislative_districts")
+    utils.geoparquet_gcs_export(
+        legislative_districts_gdf, SHARED_GCS, "legislative_districts"
+    )

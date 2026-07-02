@@ -16,6 +16,7 @@ members = [
 dev = [
     "shared-utils",
     "calitp-data-analysis",
+    "ruff>=0.15.20",
 ]
 
 [tool.uv.sources]

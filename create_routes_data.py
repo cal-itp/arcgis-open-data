@@ -38,7 +38,10 @@ def prep_route_shapes(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
 
     # There are a couple rows that do get aggregated here
     gdf2 = (
-        gdf.sort_values(route_group_cols + ["n_trips"], ascending=[True for c in route_group_cols] + [False])
+        gdf.sort_values(
+            route_group_cols + ["n_trips"],
+            ascending=[True for c in route_group_cols] + [False],
+        )
         .groupby(route_group_cols)
         .agg({"n_trips": "sum", "route_type": "first"})
         .reset_index()
@@ -49,7 +52,9 @@ def prep_route_shapes(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     # Parse out route_name here, which gets combined and cleaned and standardized
     # https://dbt-docs.dds.dot.ca.gov/index.html#!/model/model.calitp_warehouse.fct_monthly_scheduled_trips
     gdf3 = gdf3.assign(
-        route_length_feet=gdf3.geometry.to_crs(geography_utils.CA_NAD83Albers_ft).length.round(2),
+        route_length_feet=gdf3.geometry.to_crs(
+            geography_utils.CA_NAD83Albers_ft
+        ).length.round(2),
         route_id=gdf3.route_name.str.split("__", expand=True)[0],
         route_name=gdf3.route_name.str.split("__", expand=True)[1],
     )
@@ -70,7 +75,9 @@ def rename_route_columns(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     return gdf
 
 
-def add_shn_derived_columns(shapes: gpd.GeoDataFrame, buffer_amt: int = 50) -> gpd.GeoDataFrame:
+def add_shn_derived_columns(
+    shapes: gpd.GeoDataFrame, buffer_amt: int = 50
+) -> gpd.GeoDataFrame:
     """
     Buffer and dissolve State Highway Network linestrings to SHN Route.
     Use geopandas overlay to calculate % of transit route (shape) that
@@ -81,7 +88,10 @@ def add_shn_derived_columns(shapes: gpd.GeoDataFrame, buffer_amt: int = 50) -> g
     """
     SHARED_GCS = "gs://calitp-analytics-data/data-analyses/shared_data/"
 
-    shn = gpd.read_parquet(f"{SHARED_GCS}state_highway_network.parquet", storage_options={"token": credentials.token})
+    shn = gpd.read_parquet(
+        f"{SHARED_GCS}state_highway_network.parquet",
+        storage_options={"token": credentials.token},
+    )
 
     # Buffer and simply the geometry slightly
     # when we have geopandas >= 0.1, we can use simplify_coverage to help simplify polygons
@@ -95,12 +105,17 @@ def add_shn_derived_columns(shapes: gpd.GeoDataFrame, buffer_amt: int = 50) -> g
     shn_buff = shn_buff.assign(geometry=shn_buff.geometry.simplify(tolerance=25))
 
     # Overlay transit routes with the SHN geographies.
-    intersect_gdf = gpd.overlay(shapes.to_crs(shn_buff.crs), shn_buff, how="intersection", keep_geom_type=True)
+    intersect_gdf = gpd.overlay(
+        shapes.to_crs(shn_buff.crs), shn_buff, how="intersection", keep_geom_type=True
+    )
 
     # Calcuate the percent of the transit route that runs on a highway, round it up and
     # multiply it by 100. These % have 3 decimal places.
     intersect_gdf = intersect_gdf.assign(
-        pct_route_on_hwy=(intersect_gdf.geometry.length / intersect_gdf.route_length_feet).round(5) * 100,
+        pct_route_on_hwy=(
+            intersect_gdf.geometry.length / intersect_gdf.route_length_feet
+        ).round(5)
+        * 100,
     )
 
     route_group_cols = ["name", "shape_id", "route_name"]
@@ -110,20 +125,30 @@ def add_shn_derived_columns(shapes: gpd.GeoDataFrame, buffer_amt: int = 50) -> g
     # coerce as string so that we can fillna later with only string values.
     intersect_gdf2 = (
         intersect_gdf.groupby(route_group_cols)
-        .agg({"pct_route_on_hwy": "sum", "Route": lambda x: ", ".join(map(str, sorted(set(x))))})
+        .agg(
+            {
+                "pct_route_on_hwy": "sum",
+                "Route": lambda x: ", ".join(map(str, sorted(set(x)))),
+            }
+        )
         .reset_index()
         # distinguish between transit routes and SHN Route column
         .rename(columns={"Route": "shn_route"})
     )
 
-    shapes_with_shn = pd.merge(shapes, intersect_gdf2, on=route_group_cols, how="left").fillna({"pct_route_on_hwy": 0})
+    shapes_with_shn = pd.merge(
+        shapes, intersect_gdf2, on=route_group_cols, how="left"
+    ).fillna({"pct_route_on_hwy": 0})
 
     # routes can intersect many highways, causing the length to get counted multiple times
     # so let's set sum back to 100 max.
     # For Amtrak, which primarily runs outside CA, if we round to 3 decimal places, we get like 0.03% of its length is within 50 ft of SHN.
     shapes_with_shn = shapes_with_shn.assign(
         pct_route_on_hwy=shapes_with_shn.apply(
-            lambda x: round(x.pct_route_on_hwy, 1) if x.pct_route_on_hwy <= 100 else 100, axis=1
+            lambda x: (
+                round(x.pct_route_on_hwy, 1) if x.pct_route_on_hwy <= 100 else 100
+            ),
+            axis=1,
         ),
         shn_route=shapes_with_shn.shn_route.fillna(f"not_{buffer_amt}ft_from_shn"),
     )
@@ -155,13 +180,20 @@ def publish_routes(analysis_month: str) -> gpd.GeoDataFrame:
     # like organization_source_record_id or ntd_id
     crosswalk = pd.read_parquet(
         f"{OPEN_DATA_GCS}bridge_gtfs_analysis_name_x_ntd.parquet",
-        columns=["schedule_gtfs_dataset_name", "analysis_name", "caltrans_district_full"],
+        columns=[
+            "schedule_gtfs_dataset_name",
+            "analysis_name",
+            "caltrans_district_full",
+        ],
         filesystem=gcsfs.GCSFileSystem(),
     ).drop_duplicates()
 
     # Merge in crosswalk, which will filter out the feeds we don't want to publish
     routes2 = pd.merge(
-        routes, crosswalk.rename(columns={"schedule_gtfs_dataset_name": "name"}), on=["name"], how="inner"
+        routes,
+        crosswalk.rename(columns={"schedule_gtfs_dataset_name": "name"}),
+        on=["name"],
+        how="inner",
     )
 
     routes3 = rename_route_columns(routes2)
@@ -170,17 +202,24 @@ def publish_routes(analysis_month: str) -> gpd.GeoDataFrame:
 
 
 if __name__ == "__main__":
-
     LOG_FILE = "./logs/open_data.log"
     logger.add(LOG_FILE, retention="2 months")
-    logger.add(sys.stderr, format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}", level="INFO")
+    logger.add(
+        sys.stderr,
+        format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
+        level="INFO",
+    )
 
     start = datetime.datetime.now()
 
     routes = publish_routes(analysis_month)
 
-    utils.geoparquet_gcs_export(routes, OPEN_DATA_GCS, f"export/ca_transit_routes_{analysis_month}")
-    utils.geoparquet_gcs_export(routes, OPEN_DATA_GCS, "export/ca_transit_routes_latest")
+    utils.geoparquet_gcs_export(
+        routes, OPEN_DATA_GCS, f"export/ca_transit_routes_{analysis_month}"
+    )
+    utils.geoparquet_gcs_export(
+        routes, OPEN_DATA_GCS, "export/ca_transit_routes_latest"
+    )
 
     end = datetime.datetime.now()
     logger.info(f"{analysis_month}: export routes: {end - start}")

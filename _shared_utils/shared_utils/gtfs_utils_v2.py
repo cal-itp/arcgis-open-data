@@ -94,7 +94,9 @@ def get_metrolink_feed_key(
     with DBSession() as session:
         metrolink_feed = pd.read_sql(statement, session.bind)
 
-    metrolink_feed = metrolink_feed.rename(columns={"gtfs_dataset_name": "name"})[["feed_key", "name"]]
+    metrolink_feed = metrolink_feed.rename(columns={"gtfs_dataset_name": "name"})[
+        ["feed_key", "name"]
+    ]
 
     if get_df:
         return metrolink_feed
@@ -102,7 +104,9 @@ def get_metrolink_feed_key(
         return metrolink_feed.feed_key.iloc[0]
 
 
-def fill_in_metrolink_trips_df_with_shape_id(trips: pd.DataFrame, metrolink_feed_key: str) -> pd.DataFrame:
+def fill_in_metrolink_trips_df_with_shape_id(
+    trips: pd.DataFrame, metrolink_feed_key: str
+) -> pd.DataFrame:
     """
     trips: pandas.DataFrame.
             What is returned from tbls.mart_gtfs.fct_daily_scheduled_trips
@@ -117,7 +121,9 @@ def fill_in_metrolink_trips_df_with_shape_id(trips: pd.DataFrame, metrolink_feed
     # direction_id==0 (outbound), toward Irvine/Oceanside, etc
 
     df = df.assign(
-        shape_id=df.route_id.apply(lambda x: METROLINK_ROUTE_TO_SHAPE[x]).str.replace("in", "").str.replace("out", "")
+        shape_id=df.route_id.apply(lambda x: METROLINK_ROUTE_TO_SHAPE[x])
+        .str.replace("in", "")
+        .str.replace("out", "")
     )
 
     # OCin and OCout are not distinguished in dictionary
@@ -171,7 +177,9 @@ def schedule_daily_feed_to_gtfs_dataset_name(
         get_df=False,
     )
 
-    is_not_regional_precursor = func.IFNULL(DimGtfsDataset.regional_feed_type, "") != "Regional Precursor Feed"
+    is_not_regional_precursor = (
+        func.IFNULL(DimGtfsDataset.regional_feed_type, "") != "Regional Precursor Feed"
+    )
     additional_search_conditions = {
         "customer_facing": [
             is_not_regional_precursor,
@@ -185,7 +193,9 @@ def schedule_daily_feed_to_gtfs_dataset_name(
         "current_feeds": [is_not_regional_precursor],
     }
 
-    search_conditions = [FctDailyScheduleFeed.date == selected_date] + additional_search_conditions.get(feed_option, [])
+    search_conditions = [
+        FctDailyScheduleFeed.date == selected_date
+    ] + additional_search_conditions.get(feed_option, [])
 
     # Join on gtfs_dataset_key to get organization name
     statement = (
@@ -213,7 +223,11 @@ def schedule_daily_feed_to_gtfs_dataset_name(
     if keep_cols and len(keep_cols):
         columns = []
         for column in keep_cols:
-            new_column = DimGtfsDataset.name if column == "name" else getattr(FctDailyScheduleFeed, column)
+            new_column = (
+                DimGtfsDataset.name
+                if column == "name"
+                else getattr(FctDailyScheduleFeed, column)
+            )
             columns.append(new_column)
         statement = statement.with_only_columns(*columns)
 
@@ -241,7 +255,10 @@ def get_trips(
 
     search_conditions = [
         FctScheduledTrip.service_date == selected_date,
-        or_(FctScheduledTrip.feed_key.in_(operator_feeds), FctScheduledTrip.name.in_(operator_feeds)),
+        or_(
+            FctScheduledTrip.feed_key.in_(operator_feeds),
+            FctScheduledTrip.name.in_(operator_feeds),
+        ),
     ]
 
     for k, v in (custom_filtering or {}).items():
@@ -259,7 +276,9 @@ def get_trips(
 
     if get_df:
         with DBSession() as session:
-            metrolink_feed_key_name_df = get_metrolink_feed_key(selected_date=selected_date, get_df=True)
+            metrolink_feed_key_name_df = get_metrolink_feed_key(
+                selected_date=selected_date, get_df=True
+            )
             metrolink_empty = metrolink_feed_key_name_df.empty
             if not metrolink_empty:
                 metrolink_feed_key = metrolink_feed_key_name_df.feed_key.iloc[0]
@@ -267,22 +286,37 @@ def get_trips(
             else:
                 print(f"could not get metrolink feed on {selected_date}!")
             # Handle Metrolink when we need to
-            if not metrolink_empty and ((metrolink_feed_key in operator_feeds) or (metrolink_name in operator_feeds)):
-                metrolink_trips_statement = statement.where(FctScheduledTrip.feed_key == metrolink_feed_key)
-                not_metrolink_trips_statement = statement.where(FctScheduledTrip.feed_key != metrolink_feed_key)
+            if not metrolink_empty and (
+                (metrolink_feed_key in operator_feeds)
+                or (metrolink_name in operator_feeds)
+            ):
+                metrolink_trips_statement = statement.where(
+                    FctScheduledTrip.feed_key == metrolink_feed_key
+                )
+                not_metrolink_trips_statement = statement.where(
+                    FctScheduledTrip.feed_key != metrolink_feed_key
+                )
                 metrolink_trips = pd.read_sql(metrolink_trips_statement, session.bind)
-                not_metrolink_trips = pd.read_sql(not_metrolink_trips_statement, session.bind)
+                not_metrolink_trips = pd.read_sql(
+                    not_metrolink_trips_statement, session.bind
+                )
 
                 # Fix Metrolink trips as a pd.DataFrame, then concatenate
                 # This means that LazyTbl output will not show correct results
-                corrected_metrolink = fill_in_metrolink_trips_df_with_shape_id(metrolink_trips, metrolink_feed_key)
+                corrected_metrolink = fill_in_metrolink_trips_df_with_shape_id(
+                    metrolink_trips, metrolink_feed_key
+                )
 
-                return pd.concat([not_metrolink_trips, corrected_metrolink], axis=0, ignore_index=True)[
-                    trip_cols
-                ].reset_index(drop=True)
+                return pd.concat(
+                    [not_metrolink_trips, corrected_metrolink],
+                    axis=0,
+                    ignore_index=True,
+                )[trip_cols].reset_index(drop=True)
 
             elif metrolink_empty or (metrolink_feed_key not in operator_feeds):
-                statement = statement.with_only_columns(*columns) if len(columns) else statement
+                statement = (
+                    statement.with_only_columns(*columns) if len(columns) else statement
+                )
                 return pd.read_sql(statement, session.bind)
 
     return statement.with_only_columns(*columns) if len(columns) else statement
@@ -320,7 +354,9 @@ def get_shapes(
 
         # maintain usual behaviour of returning all in absence of subset param
         # must first drop pt_array since it's replaced by make_routes_gdf
-        shapes_gdf = geography_utils.make_routes_gdf(shapes, crs=crs)[shape_cols + ["geometry"]]
+        shapes_gdf = geography_utils.make_routes_gdf(shapes, crs=crs)[
+            shape_cols + ["geometry"]
+        ]
 
         return shapes_gdf
 
@@ -328,7 +364,9 @@ def get_shapes(
         columns = [func.ST_ASBINARY(FctDailyScheduledShape.pt_array)]
 
         for column in shape_cols:
-            columns.append(getattr(FctDailyScheduledShape, column)) if column != "pt_array" else None
+            columns.append(
+                getattr(FctDailyScheduledShape, column)
+            ) if column != "pt_array" else None
 
         return statement.with_only_columns(*list(columns))
 
@@ -372,7 +410,11 @@ def get_stops(
             stops = pd.read_sql(statement, session.bind)
 
         geom = [shapely.wkt.loads(x) for x in stops.pt_geom]
-        stops = gpd.GeoDataFrame(stops, geometry=geom, crs="EPSG:4326").to_crs(crs).drop(columns="pt_geom")
+        stops = (
+            gpd.GeoDataFrame(stops, geometry=geom, crs="EPSG:4326")
+            .to_crs(crs)
+            .drop(columns="pt_geom")
+        )
 
         return stops
     else:
@@ -419,20 +461,29 @@ def get_stop_times(
         if not selected_date:
             raise ValueError("selected_date must be provided to fetch trips")
         trip_df = get_trips(
-            selected_date=selected_date, operator_feeds=operator_feeds, trip_cols=["feed_key", "trip_id"]
+            selected_date=selected_date,
+            operator_feeds=operator_feeds,
+            trip_cols=["feed_key", "trip_id"],
         )
 
     columns = [DimStopTime]
 
     if stop_time_cols and len(stop_time_cols):
         columns = []
-        columns.append(DimStopTime.arrival_sec) if "arrival_sec" not in stop_time_cols else None
-        columns.append(DimStopTime.departure_sec) if "departure_sec" not in stop_time_cols else None
+        columns.append(
+            DimStopTime.arrival_sec
+        ) if "arrival_sec" not in stop_time_cols else None
+        columns.append(
+            DimStopTime.departure_sec
+        ) if "departure_sec" not in stop_time_cols else None
 
         for column in stop_time_cols:
             columns.append(getattr(DimStopTime, column))
 
-    search_conditions = [DimStopTime.feed_key.in_(operator_feeds), DimStopTime.trip_id.in_(trip_df.trip_id)]
+    search_conditions = [
+        DimStopTime.feed_key.in_(operator_feeds),
+        DimStopTime.trip_id.in_(trip_df.trip_id),
+    ]
 
     for k, v in (custom_filtering or {}).items():
         search_conditions.append(getattr(DimStopTime, k).in_(v))
@@ -458,7 +509,9 @@ def get_stop_times(
     return statement
 
 
-def filter_to_public_schedule_gtfs_dataset_keys(get_df: bool = False) -> Union[list, pd.DataFrame]:
+def filter_to_public_schedule_gtfs_dataset_keys(
+    get_df: bool = False,
+) -> Union[list, pd.DataFrame]:
     """
     Return a list of schedule_gtfs_dataset_keys that have
     private_dataset == None.

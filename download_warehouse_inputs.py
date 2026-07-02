@@ -17,10 +17,13 @@ PROD_PROJECT = "cal-itp-data-infra"
 PROD_MART = "mart_gtfs_rollup"
 
 if __name__ == "__main__":
-
     LOG_FILE = "./logs/open_data.log"
     logger.add(LOG_FILE, retention="2 months")
-    logger.add(sys.stderr, format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}", level="INFO")
+    logger.add(
+        sys.stderr,
+        format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
+        level="INFO",
+    )
 
     MONTH_DATE_COL = "month_first_day"
     start = datetime.datetime.now()
@@ -54,7 +57,9 @@ if __name__ == "__main__":
         geom_type="line",
     )
 
-    utils.geoparquet_gcs_export(monthly_routes, OPEN_DATA_GCS, f"routes_{analysis_month}")
+    utils.geoparquet_gcs_export(
+        monthly_routes, OPEN_DATA_GCS, f"routes_{analysis_month}"
+    )
     t2 = datetime.datetime.now()
     logger.info(f"routes: {analysis_month}: {t2 - t1}")
 
@@ -65,7 +70,10 @@ if __name__ == "__main__":
         date_col=None,
     )
 
-    crosswalk.to_parquet(f"{OPEN_DATA_GCS}bridge_gtfs_analysis_name_x_ntd.parquet", filesystem=gcsfs.GCSFileSystem())
+    crosswalk.to_parquet(
+        f"{OPEN_DATA_GCS}bridge_gtfs_analysis_name_x_ntd.parquet",
+        filesystem=gcsfs.GCSFileSystem(),
+    )
 
     end = datetime.datetime.now()
     logger.info(f"crosswalk: {end - t2}")

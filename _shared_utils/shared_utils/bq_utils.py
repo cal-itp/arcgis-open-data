@@ -26,7 +26,9 @@ def add_sql_date_filter(date_col: str, start_date: str, end_date: str) -> str:
     """
     Add a where condition to filter by date, coerce the dates so sql_query is read correctly.
     """
-    where_condition = f"WHERE {date_col} >= DATE('{start_date}') AND {date_col} <= DATE('{end_date}')"
+    where_condition = (
+        f"WHERE {date_col} >= DATE('{start_date}') AND {date_col} <= DATE('{end_date}')"
+    )
 
     return where_condition
 
@@ -50,19 +52,26 @@ def download_table(
     sql_query_statement = f"{basic_query} {where_condition}"
 
     if date_col is None:
-        df = pandas_gbq.read_gbq(basic_query, project_id=project_name, dialect="standard", credentials=credentials)
+        df = pandas_gbq.read_gbq(
+            basic_query,
+            project_id=project_name,
+            dialect="standard",
+            credentials=credentials,
+        )
 
         print(f"query: {basic_query}")
 
     if date_col is not None:
         df = pandas_gbq.read_gbq(
-            sql_query_statement, project_id=project_name, dialect="standard", credentials=credentials
+            sql_query_statement,
+            project_id=project_name,
+            dialect="standard",
+            credentials=credentials,
         ).astype({date_col: "datetime64[ns]"})
 
         print(f"query: {sql_query_statement}")
 
     if geom_col is not None:
-
         df = geo_utils.convert_to_gdf(df, geom_col, geom_type)
 
     return df

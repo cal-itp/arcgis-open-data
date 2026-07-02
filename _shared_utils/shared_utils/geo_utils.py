@@ -11,7 +11,7 @@ import shapely
 from calitp_data_analysis import geography_utils
 from scipy.spatial import KDTree
 from shared_utils import rt_utils
-from typing import Literal, Union
+from typing import Literal
 
 # Could we use distance to filter for nearest neighbor?
 # It can make the length of results more unpredictable...maybe we stick to
@@ -21,7 +21,11 @@ geo_const_meters = 6_371_000 * np.pi / 180
 geo_const_miles = 3_959_000 * np.pi / 180
 
 
-def nearest_snap(line: Union[shapely.LineString, np.ndarray], point: shapely.Point, k_neighbors: int = 1) -> np.ndarray:
+def nearest_snap(
+    line: Union[shapely.LineString, np.ndarray],
+    point: shapely.Point,
+    k_neighbors: int = 1,
+) -> np.ndarray:
     """
     Based off of this function,
     but we want to return the index value, rather than the point.
@@ -50,7 +54,9 @@ def vp_as_gdf(vp: pd.DataFrame, crs: str = "EPSG:3310") -> gpd.GeoDataFrame:
     Turn vp as a gdf and project to EPSG:3310.
     """
     vp_gdf = (
-        geography_utils.create_point_geometry(vp, longitude_col="x", latitude_col="y", crs=geography_utils.WGS84)
+        geography_utils.create_point_geometry(
+            vp, longitude_col="x", latitude_col="y", crs=geography_utils.WGS84
+        )
         .to_crs(crs)
         .drop(columns=["x", "y"])
     )
@@ -66,7 +72,9 @@ def add_arrowized_geometry(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     CRS = gdf.crs.to_epsg()
 
     # TODO: parallel_offset is going to be deprecated? offset_curve is the new one
-    geom_parallel = gpd.GeoSeries([rt_utils.try_parallel(i) for i in segment_geom], crs=CRS)
+    geom_parallel = gpd.GeoSeries(
+        [rt_utils.try_parallel(i) for i in segment_geom], crs=CRS
+    )
     # geom_parallel = gpd.GeoSeries(
     #    [i.offset_curve(30) for i in segment_geom],
     #    crs=CRS
@@ -79,7 +87,9 @@ def add_arrowized_geometry(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     return gdf
 
 
-def get_direction_vector(start: shapely.geometry.Point, end: shapely.geometry.Point) -> tuple:
+def get_direction_vector(
+    start: shapely.geometry.Point, end: shapely.geometry.Point
+) -> tuple:
     """
     Given 2 points (in a projected CRS...not WGS84), return a
     tuple that shows (delta_x, delta_y).
@@ -133,7 +143,9 @@ def dot_product(vec1: tuple, vec2: tuple) -> float:
     return vec1[0] * vec2[0] + vec1[1] * vec2[1]
 
 
-def segmentize_by_indices(line_geometry: shapely.LineString, start_idx: int, end_idx: int) -> shapely.LineString:
+def segmentize_by_indices(
+    line_geometry: shapely.LineString, start_idx: int, end_idx: int
+) -> shapely.LineString:
     """
     Cut a line according to index values.
     Similar to shapely.segmentize, which allows you to cut
@@ -154,7 +166,9 @@ def segmentize_by_indices(line_geometry: shapely.LineString, start_idx: int, end
         return shapely.LineString([shapely.Point(i) for i in subset_coords])
 
 
-def draw_line_between_points(gdf: gpd.GeoDataFrame, group_cols: list) -> gpd.GeoDataFrame:
+def draw_line_between_points(
+    gdf: gpd.GeoDataFrame, group_cols: list
+) -> gpd.GeoDataFrame:
     """
     Use the current postmile as the
     starting geometry / segment beginning
@@ -166,16 +180,18 @@ def draw_line_between_points(gdf: gpd.GeoDataFrame, group_cols: list) -> gpd.Geo
     # Grab the subsequent point geometry
     # We can drop whenever the last point is missing within
     # a group. If we have 3 points, we can draw 2 lines.
-    gdf = gdf.assign(end_geometry=(gdf.groupby(group_cols, group_keys=False, dropna=False).geometry.shift(-1))).dropna(
-        subset="end_geometry"
-    )
+    gdf = gdf.assign(
+        end_geometry=(
+            gdf.groupby(group_cols, group_keys=False, dropna=False).geometry.shift(-1)
+        )
+    ).dropna(subset="end_geometry")
 
     # Construct linestring with 2 point coordinates
     gdf = (
         gdf.assign(
-            line_geometry=gdf.apply(lambda x: shapely.LineString([x.geometry, x.end_geometry]), axis=1).set_crs(
-                geography_utils.WGS84
-            )
+            line_geometry=gdf.apply(
+                lambda x: shapely.LineString([x.geometry, x.end_geometry]), axis=1
+            ).set_crs(geography_utils.WGS84)
         )
         .drop(columns=["geometry", "end_geometry"])
         .rename(columns={"line_geometry": "geometry"})
@@ -185,9 +201,7 @@ def draw_line_between_points(gdf: gpd.GeoDataFrame, group_cols: list) -> gpd.Geo
 
 
 def convert_to_gdf(
-    df: pd.DataFrame, 
-    geom_col: str,
-    geom_type: Literal["point", "line"]
+    df: pd.DataFrame, geom_col: str, geom_type: Literal["point", "line"]
 ) -> gpd.GeoDataFrame:
     """
     For stops, we want to make pt_geom a point.
@@ -200,9 +214,7 @@ def convert_to_gdf(
         df["geometry"] = df[geom_col].apply(geography_utils.make_linestring)
 
     gdf = gpd.GeoDataFrame(
-        df.drop(columns = geom_col), geometry="geometry", 
-        crs="EPSG:4326"
+        df.drop(columns=geom_col), geometry="geometry", crs="EPSG:4326"
     )
 
     return gdf
-

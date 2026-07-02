@@ -23,20 +23,27 @@ def gcs_geopandas():
 
 
 GCS_FILE_PATH = "gs://calitp-analytics-data/data-analyses/shared_data/"
-COMPILED_CACHED_GCS = "gs://calitp-analytics-data/data-analyses/rt_delay/compiled_cached_views/"
+COMPILED_CACHED_GCS = (
+    "gs://calitp-analytics-data/data-analyses/rt_delay/compiled_cached_views/"
+)
 
 
 def make_clean_state_highway_network():
     """
     Create State Highway Network dataset.
     """
-    URL = "https://opendata.arcgis.com/datasets/" "77f2d7ba94e040a78bfbe36feb6279da_0.geojson"
+    URL = (
+        "https://opendata.arcgis.com/datasets/"
+        "77f2d7ba94e040a78bfbe36feb6279da_0.geojson"
+    )
 
     gdf = gcs_geopandas().read_file(URL)
 
     # Save a raw, undissolved version
     utils.geoparquet_gcs_export(
-        gdf.drop(columns=["Shape_Length", "OBJECTID"]).pipe(to_snakecase), GCS_FILE_PATH, "state_highway_network_raw"
+        gdf.drop(columns=["Shape_Length", "OBJECTID"]).pipe(to_snakecase),
+        GCS_FILE_PATH,
+        "state_highway_network_raw",
     )
 
     keep_cols = ["Route", "County", "District", "RouteType", "Direction", "geometry"]
@@ -62,13 +69,19 @@ def dissolve_shn_district() -> gpd.GeoDataFrame:
     of the highway and do some light cleaning.
     """
     # Read in the dataset and change the CRS to one to feet.
-    SHN_FILE = catalog_utils.get_catalog("shared_data_catalog").state_highway_network.urlpath
+    SHN_FILE = catalog_utils.get_catalog(
+        "shared_data_catalog"
+    ).state_highway_network.urlpath
 
-    shn = gcs_geopandas().read_parquet(SHN_FILE).to_crs(geography_utils.CA_NAD83Albers_ft)
+    shn = (
+        gcs_geopandas().read_parquet(SHN_FILE).to_crs(geography_utils.CA_NAD83Albers_ft)
+    )
 
     # Dissolve by route which represents the the route's name and drop the other columns
     # because they are no longer relevant.
-    shn_dissolved = (shn.dissolve(by=["Route", "District"]).reset_index())[["Route", "District", "geometry"]]
+    shn_dissolved = (shn.dissolve(by=["Route", "District"]).reset_index())[
+        ["Route", "District", "geometry"]
+    ]
 
     # Rename because I don't want any confusion between SHN route and
     # transit route.
@@ -105,7 +118,8 @@ def buffer_shn(buffer_amount: int, file_name: str) -> gpd.GeoDataFrame:
     # Save it out so we won't have to buffer over again and
     # can just read it in.
     gcs_geopandas().geo_data_frame_to_parquet(
-        shn_df_buffered, f"{GCS_FILE_PATH}shn_buffered_{buffer_amount}_ft_{file_name}.parquet"
+        shn_df_buffered,
+        f"{GCS_FILE_PATH}shn_buffered_{buffer_amount}_ft_{file_name}.parquet",
     )
 
     return shn_df_buffered

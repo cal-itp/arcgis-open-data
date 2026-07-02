@@ -101,10 +101,14 @@ years_available = list(range(2023, datetime.datetime.now().year + 1))
 current_year = max(years_available)
 
 y2023_dates = [
-    v for k, v in DATES.items() if k.endswith("2023") and not any(substring in k for substring in ["jan", "feb"])
+    v
+    for k, v in DATES.items()
+    if k.endswith("2023") and not any(substring in k for substring in ["jan", "feb"])
 ]
 
-y2024_dates = [v for k, v in DATES.items() if k.endswith("2024") and k not in ["oct2024g"]]
+y2024_dates = [
+    v for k, v in DATES.items() if k.endswith("2024") and k not in ["oct2024g"]
+]
 y2025_dates = [v for k, v in DATES.items() if k.endswith("2025")]
 y2026_dates = [v for k, v in DATES.items() if k.endswith("2026")]
 
@@ -125,7 +129,11 @@ all_dates = [v for k, v in DATES.items() if k not in one_off_dates and "2022" no
 
 def get_week(month: Literal[[*valid_weeks]], exclude_wed: bool) -> list:
     if exclude_wed:
-        return [v for k, v in DATES.items() if (month in k) and (not k.endswith(month)) and (k not in one_off_dates)]
+        return [
+            v
+            for k, v in DATES.items()
+            if (month in k) and (not k.endswith(month)) and (k not in one_off_dates)
+        ]
     else:
         return [v for k, v in DATES.items() if month in k and k not in one_off_dates]
 

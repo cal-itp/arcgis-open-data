@@ -100,11 +100,14 @@ def subset_table_from_previous_date(
         f"{SCHED_GCS}{CROSSWALK_FILE}_{date}.parquet", columns=["name", crosswalk_col]
     )
 
-    subset_keys = crosswalk[crosswalk.name.isin(operator_and_dates_dict[date])][crosswalk_col].unique()
+    subset_keys = crosswalk[crosswalk.name.isin(operator_and_dates_dict[date])][
+        crosswalk_col
+    ].unique()
 
     if data_type == "df":
         past_df = gcs_pandas().read_parquet(
-            f"{gcs_bucket}{filename}_{date}.parquet", filters=[[(crosswalk_col, "in", subset_keys)]]
+            f"{gcs_bucket}{filename}_{date}.parquet",
+            filters=[[(crosswalk_col, "in", subset_keys)]],
         )
     else:
         past_df = gcs_geopandas().read_parquet(
@@ -125,11 +128,16 @@ def filter_to_recent_date(df: pd.DataFrame, group_cols: list) -> pd.DataFrame:
         df.groupby(group_cols, group_keys=False)
         .service_date.max()
         .reset_index()
-        .sort_values(["service_date"] + group_cols, ascending=[False] + [True for c in group_cols])
+        .sort_values(
+            ["service_date"] + group_cols,
+            ascending=[False] + [True for c in group_cols],
+        )
         .reset_index(drop=True)
         # .astype({"service_date": "str"})
     )
 
-    subset_df = pd.merge(df, most_recent_df, on=group_cols + ["service_date"], how="inner")
+    subset_df = pd.merge(
+        df, most_recent_df, on=group_cols + ["service_date"], how="inner"
+    )
 
     return subset_df

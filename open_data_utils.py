@@ -68,11 +68,17 @@ def esri_truncate_columns(columns: list | pd.Index) -> dict:
         else:  # truncated duplicate present
             for i in range(1, 101):
                 if i > 99:
-                    raise Exception("gdal does not support more than 99 truncated duplicates")
+                    raise Exception(
+                        "gdal does not support more than 99 truncated duplicates"
+                    )
                 suffix = str(i).rjust(2, "_")  # pad single digits with _ on left
                 if col[:8] + suffix not in truncated_cols:
                     truncated_cols += [col[:8] + suffix]
                     break
     truncated_dict = dict(zip(truncated_cols, columns))
-    truncated_dict = {key: truncated_dict[key] for key in truncated_dict.keys() if key != truncated_dict[key]}
+    truncated_dict = {
+        key: truncated_dict[key]
+        for key in truncated_dict.keys()
+        if key != truncated_dict[key]
+    }
     return truncated_dict

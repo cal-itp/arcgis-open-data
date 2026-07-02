@@ -51,9 +51,23 @@ def time_span_labeling(date_list: list) -> tuple[str]:
     use this week's average to stand-in for the entire month.
     Label with month and year.
     """
-    time_span_str = list(set([datetime.datetime.strptime(d, "%Y-%m-%d").strftime("%b%Y").lower() for d in date_list]))
+    time_span_str = list(
+        set(
+            [
+                datetime.datetime.strptime(d, "%Y-%m-%d").strftime("%b%Y").lower()
+                for d in date_list
+            ]
+        )
+    )
 
-    time_span_num = list(set([datetime.datetime.strptime(d, "%Y-%m-%d").strftime("%m_%Y").lower() for d in date_list]))
+    time_span_num = list(
+        set(
+            [
+                datetime.datetime.strptime(d, "%Y-%m-%d").strftime("%m_%Y").lower()
+                for d in date_list
+            ]
+        )
+    )
 
     if len(time_span_str) == 1:
         return time_span_str[0], time_span_num[0]

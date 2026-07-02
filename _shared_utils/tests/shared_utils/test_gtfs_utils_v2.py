@@ -47,7 +47,10 @@ class TestGtfsUtilsV2:
 
         assert len(result) == 1
         assert result.to_dict(orient="records") == [
-            {"feed_key": "0b0ebeff0c1f7ff681e6a06d6218ecd6", "name": "Metrolink Schedule"}
+            {
+                "feed_key": "0b0ebeff0c1f7ff681e6a06d6218ecd6",
+                "name": "Metrolink Schedule",
+            }
         ]
 
     @pytest.mark.vcr
@@ -82,10 +85,14 @@ class TestGtfsUtilsV2:
             ]
         )
 
-    @pytest.mark.default_cassette("TestGtfsUtilsV2.test_schedule_daily_feed_to_gtfs_dataset_name.yaml")
+    @pytest.mark.default_cassette(
+        "TestGtfsUtilsV2.test_schedule_daily_feed_to_gtfs_dataset_name.yaml"
+    )
     @pytest.mark.vcr
     def test_schedule_daily_feed_to_gtfs_dataset_name_get_df_false(self):
-        result = schedule_daily_feed_to_gtfs_dataset_name(selected_date="2025-09-01", get_df=False)
+        result = schedule_daily_feed_to_gtfs_dataset_name(
+            selected_date="2025-09-01", get_df=False
+        )
 
         assert isinstance(result, sqlalchemy.sql.selectable.Select)
 
@@ -194,7 +201,9 @@ class TestGtfsUtilsV2:
         )
 
     @pytest.mark.vcr
-    def test_schedule_daily_feed_to_gtfs_dataset_name_feed_option_include_precursor(self):
+    def test_schedule_daily_feed_to_gtfs_dataset_name_feed_option_include_precursor(
+        self,
+    ):
         result = schedule_daily_feed_to_gtfs_dataset_name(
             selected_date="2025-09-01",
             feed_option="include_precursor",
@@ -252,7 +261,10 @@ class TestGtfsUtilsV2:
 
     @pytest.mark.vcr
     def test_get_trips(self):
-        result = get_trips(selected_date="2025-09-01", operator_feeds=["c86f88ad0b15f5185d073f91f2130285"])
+        result = get_trips(
+            selected_date="2025-09-01",
+            operator_feeds=["c86f88ad0b15f5185d073f91f2130285"],
+        )
 
         assert len(result) == 3
         assert result.to_dict(orient="records") == unordered(
@@ -300,8 +312,12 @@ class TestGtfsUtilsV2:
                     "flex_service_hours": None,
                     "contains_warning_duplicate_stop_times_primary_key": False,
                     "contains_warning_missing_foreign_key_stop_id": False,
-                    "trip_first_departure_ts": Timestamp("2025-09-01 16:51:00+0000", tz="UTC"),
-                    "trip_last_arrival_ts": Timestamp("2025-09-01 17:26:00+0000", tz="UTC"),
+                    "trip_first_departure_ts": Timestamp(
+                        "2025-09-01 16:51:00+0000", tz="UTC"
+                    ),
+                    "trip_last_arrival_ts": Timestamp(
+                        "2025-09-01 17:26:00+0000", tz="UTC"
+                    ),
                     "first_start_pickup_drop_off_window_sec": None,
                     "last_end_pickup_drop_off_window_sec": None,
                     "is_gtfs_flex_trip": False,
@@ -314,11 +330,19 @@ class TestGtfsUtilsV2:
                     "trip_first_start_pickup_drop_off_window_ts": None,
                     "trip_last_end_pickup_drop_off_window_ts": None,
                     "trip_start_date_pacific": datetime.date(2025, 9, 1),
-                    "trip_first_departure_datetime_pacific": Timestamp("2025-09-01 09:51:00"),
-                    "trip_last_arrival_datetime_pacific": Timestamp("2025-09-01 10:26:00"),
+                    "trip_first_departure_datetime_pacific": Timestamp(
+                        "2025-09-01 09:51:00"
+                    ),
+                    "trip_last_arrival_datetime_pacific": Timestamp(
+                        "2025-09-01 10:26:00"
+                    ),
                     "trip_start_date_local_tz": datetime.date(2025, 9, 1),
-                    "trip_first_departure_datetime_local_tz": Timestamp("2025-09-01 09:51:00"),
-                    "trip_last_arrival_datetime_local_tz": Timestamp("2025-09-01 10:26:00"),
+                    "trip_first_departure_datetime_local_tz": Timestamp(
+                        "2025-09-01 09:51:00"
+                    ),
+                    "trip_last_arrival_datetime_local_tz": Timestamp(
+                        "2025-09-01 10:26:00"
+                    ),
                     "trip_first_start_pickup_drop_off_window_date_pacific": None,
                     "trip_first_start_pickup_drop_off_window_datetime_pacific": None,
                     "trip_last_end_pickup_drop_off_window_pacific": None,
@@ -370,8 +394,12 @@ class TestGtfsUtilsV2:
                     "flex_service_hours": None,
                     "contains_warning_duplicate_stop_times_primary_key": False,
                     "contains_warning_missing_foreign_key_stop_id": False,
-                    "trip_first_departure_ts": Timestamp("2025-09-01 18:51:00+0000", tz="UTC"),
-                    "trip_last_arrival_ts": Timestamp("2025-09-01 19:26:00+0000", tz="UTC"),
+                    "trip_first_departure_ts": Timestamp(
+                        "2025-09-01 18:51:00+0000", tz="UTC"
+                    ),
+                    "trip_last_arrival_ts": Timestamp(
+                        "2025-09-01 19:26:00+0000", tz="UTC"
+                    ),
                     "first_start_pickup_drop_off_window_sec": None,
                     "last_end_pickup_drop_off_window_sec": None,
                     "is_gtfs_flex_trip": False,
@@ -384,11 +412,19 @@ class TestGtfsUtilsV2:
                     "trip_first_start_pickup_drop_off_window_ts": None,
                     "trip_last_end_pickup_drop_off_window_ts": None,
                     "trip_start_date_pacific": datetime.date(2025, 9, 1),
-                    "trip_first_departure_datetime_pacific": Timestamp("2025-09-01 11:51:00"),
-                    "trip_last_arrival_datetime_pacific": Timestamp("2025-09-01 12:26:00"),
+                    "trip_first_departure_datetime_pacific": Timestamp(
+                        "2025-09-01 11:51:00"
+                    ),
+                    "trip_last_arrival_datetime_pacific": Timestamp(
+                        "2025-09-01 12:26:00"
+                    ),
                     "trip_start_date_local_tz": datetime.date(2025, 9, 1),
-                    "trip_first_departure_datetime_local_tz": Timestamp("2025-09-01 11:51:00"),
-                    "trip_last_arrival_datetime_local_tz": Timestamp("2025-09-01 12:26:00"),
+                    "trip_first_departure_datetime_local_tz": Timestamp(
+                        "2025-09-01 11:51:00"
+                    ),
+                    "trip_last_arrival_datetime_local_tz": Timestamp(
+                        "2025-09-01 12:26:00"
+                    ),
                     "trip_first_start_pickup_drop_off_window_date_pacific": None,
                     "trip_first_start_pickup_drop_off_window_datetime_pacific": None,
                     "trip_last_end_pickup_drop_off_window_pacific": None,
@@ -440,8 +476,12 @@ class TestGtfsUtilsV2:
                     "flex_service_hours": None,
                     "contains_warning_duplicate_stop_times_primary_key": False,
                     "contains_warning_missing_foreign_key_stop_id": False,
-                    "trip_first_departure_ts": Timestamp("2025-09-01 17:51:00+0000", tz="UTC"),
-                    "trip_last_arrival_ts": Timestamp("2025-09-01 18:26:00+0000", tz="UTC"),
+                    "trip_first_departure_ts": Timestamp(
+                        "2025-09-01 17:51:00+0000", tz="UTC"
+                    ),
+                    "trip_last_arrival_ts": Timestamp(
+                        "2025-09-01 18:26:00+0000", tz="UTC"
+                    ),
                     "first_start_pickup_drop_off_window_sec": None,
                     "last_end_pickup_drop_off_window_sec": None,
                     "is_gtfs_flex_trip": False,
@@ -454,11 +494,19 @@ class TestGtfsUtilsV2:
                     "trip_first_start_pickup_drop_off_window_ts": None,
                     "trip_last_end_pickup_drop_off_window_ts": None,
                     "trip_start_date_pacific": datetime.date(2025, 9, 1),
-                    "trip_first_departure_datetime_pacific": Timestamp("2025-09-01 10:51:00"),
-                    "trip_last_arrival_datetime_pacific": Timestamp("2025-09-01 11:26:00"),
+                    "trip_first_departure_datetime_pacific": Timestamp(
+                        "2025-09-01 10:51:00"
+                    ),
+                    "trip_last_arrival_datetime_pacific": Timestamp(
+                        "2025-09-01 11:26:00"
+                    ),
                     "trip_start_date_local_tz": datetime.date(2025, 9, 1),
-                    "trip_first_departure_datetime_local_tz": Timestamp("2025-09-01 10:51:00"),
-                    "trip_last_arrival_datetime_local_tz": Timestamp("2025-09-01 11:26:00"),
+                    "trip_first_departure_datetime_local_tz": Timestamp(
+                        "2025-09-01 10:51:00"
+                    ),
+                    "trip_last_arrival_datetime_local_tz": Timestamp(
+                        "2025-09-01 11:26:00"
+                    ),
                     "trip_first_start_pickup_drop_off_window_date_pacific": None,
                     "trip_first_start_pickup_drop_off_window_datetime_pacific": None,
                     "trip_last_end_pickup_drop_off_window_pacific": None,
@@ -473,16 +521,23 @@ class TestGtfsUtilsV2:
     @pytest.mark.default_cassette("TestGtfsUtilsV2.test_get_trips.yaml")
     @pytest.mark.vcr
     def test_get_trips_no_metrolink_feed(self, capfd):
-        get_trips(selected_date="2025-09-01", operator_feeds=["c86f88ad0b15f5185d073f91f2130285"])
+        get_trips(
+            selected_date="2025-09-01",
+            operator_feeds=["c86f88ad0b15f5185d073f91f2130285"],
+        )
         out, err = capfd.readouterr()
 
-        assert re.search("could not get metrolink feed on 2025-09-01!", out), "The expected text was not printed."
+        assert re.search("could not get metrolink feed on 2025-09-01!", out), (
+            "The expected text was not printed."
+        )
 
     @pytest.mark.default_cassette("TestGtfsUtilsV2.test_get_trips.yaml")
     @pytest.mark.vcr
     def test_get_trips_get_df_false(self):
         result = get_trips(
-            selected_date="2025-09-01", operator_feeds=["c86f88ad0b15f5185d073f91f2130285"], get_df=False
+            selected_date="2025-09-01",
+            operator_feeds=["c86f88ad0b15f5185d073f91f2130285"],
+            get_df=False,
         )
 
         assert isinstance(result, sqlalchemy.sql.selectable.Select)
@@ -492,7 +547,14 @@ class TestGtfsUtilsV2:
         result = get_trips(
             selected_date="2025-09-01",
             operator_feeds=["c86f88ad0b15f5185d073f91f2130285"],
-            trip_cols=["name", "gtfs_dataset_key", "feed_key", "trip_id", "route_id", "route_type"],
+            trip_cols=[
+                "name",
+                "gtfs_dataset_key",
+                "feed_key",
+                "trip_id",
+                "route_id",
+                "route_type",
+            ],
         )
 
         assert len(result) == 3
@@ -530,8 +592,16 @@ class TestGtfsUtilsV2:
         result = get_trips(
             selected_date="2025-09-01",
             operator_feeds=["c86f88ad0b15f5185d073f91f2130285"],
-            trip_cols=["name", "gtfs_dataset_key", "feed_key", "trip_id", "trip_instance_key"],
-            custom_filtering={"trip_instance_key": ["d7d7502d292a35c41ee5a6c3c43f2fd5"]},
+            trip_cols=[
+                "name",
+                "gtfs_dataset_key",
+                "feed_key",
+                "trip_id",
+                "trip_instance_key",
+            ],
+            custom_filtering={
+                "trip_instance_key": ["d7d7502d292a35c41ee5a6c3c43f2fd5"]
+            },
         )
 
         assert len(result) == 1
@@ -547,12 +617,17 @@ class TestGtfsUtilsV2:
 
     @pytest.mark.vcr
     def test_get_trips_metrolink_feed_present(self, capfd):
-        result = get_trips(selected_date="2025-11-24", operator_feeds=["4321a7e3901b2275805494a746ec1c6a"])
+        result = get_trips(
+            selected_date="2025-11-24",
+            operator_feeds=["4321a7e3901b2275805494a746ec1c6a"],
+        )
 
         assert len(result) == 1
         out, err = capfd.readouterr()
 
-        assert re.search("metrolink", out, re.IGNORECASE) is None, "Should not have printed about metrolink feed."
+        assert re.search("metrolink", out, re.IGNORECASE) is None, (
+            "Should not have printed about metrolink feed."
+        )
 
     @pytest.mark.vcr
     def test_get_trips_fill_in_metrolink_shape_id(self, capfd):
@@ -565,18 +640,27 @@ class TestGtfsUtilsV2:
         assert len(result) == 1
         # TODO shape_id was already VTin in the DB. It's not clear when fill_in_metrolink_trips_df_with_shape_id is needed.
         assert result.to_dict(orient="records") == [
-            {"name": "Metrolink Schedule", "feed_key": "918ed58c79d05e956cf6f0c15e2a9902", "shape_id": "VTin"}
+            {
+                "name": "Metrolink Schedule",
+                "feed_key": "918ed58c79d05e956cf6f0c15e2a9902",
+                "shape_id": "VTin",
+            }
         ]
 
     def test_get_trips_no_operator_feeds(self):
-        with pytest.raises(ValueError, match="Supply list of feed keys or operator names!"):
+        with pytest.raises(
+            ValueError, match="Supply list of feed keys or operator names!"
+        ):
             get_trips(selected_date="2025-08-23")
 
     @pytest.mark.vcr
     def test_get_shapes(self):
         result = get_shapes(
             selected_date="2025-10-01",
-            operator_feeds=["3ea60aa240ddc543da5415ccc759fd6d", "ebeaafe0a365384015dfe01dd80b683d"],
+            operator_feeds=[
+                "3ea60aa240ddc543da5415ccc759fd6d",
+                "ebeaafe0a365384015dfe01dd80b683d",
+            ],
         )
 
         assert len(result) == 2
@@ -640,7 +724,9 @@ class TestGtfsUtilsV2:
                 "feed_key": "3ea60aa240ddc543da5415ccc759fd6d",
                 "feed_timezone": "America/Los_Angeles",
                 "service_date": datetime.date(2025, 10, 1),
-                "shape_first_departure_datetime_pacific": Timestamp("2025-10-01 09:45:00"),
+                "shape_first_departure_datetime_pacific": Timestamp(
+                    "2025-10-01 09:45:00"
+                ),
                 "shape_last_arrival_datetime_pacific": Timestamp("2025-10-01 11:35:00"),
                 "shape_id": "2m8h",
                 "shape_array_key": "a023425d1b44b2af7ffa58e220b7da8b",
@@ -723,7 +809,10 @@ class TestGtfsUtilsV2:
         result = get_shapes(
             selected_date="2025-10-01",
             operator_feeds=["89c9390b2669927a67a4594f119986d6"],
-            custom_filtering={"shape_array_key": ["166d1656656c24bb26a66f0df49edf1c"], "n_trips": [39]},
+            custom_filtering={
+                "shape_array_key": ["166d1656656c24bb26a66f0df49edf1c"],
+                "n_trips": [39],
+            },
         )
 
         assert len(result) == 1
@@ -747,17 +836,23 @@ class TestGtfsUtilsV2:
         ]
 
     def test_get_shapes_no_operator_feeds(self):
-        with pytest.raises(ValueError, match="Supply list of feed keys or operator names!"):
+        with pytest.raises(
+            ValueError, match="Supply list of feed keys or operator names!"
+        ):
             get_shapes(selected_date="2025-09-19")
 
     def test_get_shapes_get_df_false(self):
         result = get_shapes(
-            selected_date="2025-09-01", operator_feeds=["3ea60aa240ddc543da5415ccc759fd6d"], get_df=False
+            selected_date="2025-09-01",
+            operator_feeds=["3ea60aa240ddc543da5415ccc759fd6d"],
+            get_df=False,
         )
 
         assert isinstance(result, sqlalchemy.sql.selectable.Select)
         statement = str(result)
-        assert re.search(r"SELECT\s.*pt_array.*\sFROM", statement), "The statement did not include pt_array column."
+        assert re.search(r"SELECT\s.*pt_array.*\sFROM", statement), (
+            "The statement did not include pt_array column."
+        )
 
     @pytest.mark.vcr
     def test_get_stops(self):
@@ -940,26 +1035,36 @@ class TestGtfsUtilsV2:
 
         # Check first_stop_arrival_datetime_pacific
         assert result.loc[
-            result.key == "36e9a190be944c957bc0d73fb291466e", "first_stop_arrival_datetime_pacific"
+            result.key == "36e9a190be944c957bc0d73fb291466e",
+            "first_stop_arrival_datetime_pacific",
         ].item() == Timestamp("2024-07-05 07:40:00")
         assert result.loc[
-            result.key == "d3b1b52ff685a00becb0d486cd209cd2", "first_stop_arrival_datetime_pacific"
+            result.key == "d3b1b52ff685a00becb0d486cd209cd2",
+            "first_stop_arrival_datetime_pacific",
         ].item() == Timestamp("2024-07-05 09:00:00")
         assert (
-            result.loc[result.key == "6a9b406f1e940f2f98b40cd9af8e0bdc", "first_stop_arrival_datetime_pacific"]
+            result.loc[
+                result.key == "6a9b406f1e940f2f98b40cd9af8e0bdc",
+                "first_stop_arrival_datetime_pacific",
+            ]
             .isna()
             .item()
         )
 
         # Check last_stop_arrival_datetime_pacific
         assert result.loc[
-            result.key == "36e9a190be944c957bc0d73fb291466e", "last_stop_departure_datetime_pacific"
+            result.key == "36e9a190be944c957bc0d73fb291466e",
+            "last_stop_departure_datetime_pacific",
         ].item() == Timestamp("2024-07-05 17:30:00")
         assert result.loc[
-            result.key == "d3b1b52ff685a00becb0d486cd209cd2", "last_stop_departure_datetime_pacific"
+            result.key == "d3b1b52ff685a00becb0d486cd209cd2",
+            "last_stop_departure_datetime_pacific",
         ].item() == Timestamp("2024-07-05 20:25:00")
         assert (
-            result.loc[result.key == "6a9b406f1e940f2f98b40cd9af8e0bdc", "last_stop_departure_datetime_pacific"]
+            result.loc[
+                result.key == "6a9b406f1e940f2f98b40cd9af8e0bdc",
+                "last_stop_departure_datetime_pacific",
+            ]
             .isna()
             .item()
         )
@@ -1094,7 +1199,9 @@ class TestGtfsUtilsV2:
         assert result.stop_id.values[0] == "20501"
 
     def test_get_stops_no_operator_feeds(self):
-        with pytest.raises(ValueError, match="Supply list of feed keys or operator names!"):
+        with pytest.raises(
+            ValueError, match="Supply list of feed keys or operator names!"
+        ):
             get_stops(selected_date="2024-07-05")
 
     def test_get_stops_get_df_false(self):
@@ -1115,7 +1222,9 @@ class TestGtfsUtilsV2:
         )
 
         assert len(result) == 2
-        assert result.drop(columns=["_feed_valid_from"]).to_dict(orient="records") == unordered(
+        assert result.drop(columns=["_feed_valid_from"]).to_dict(
+            orient="records"
+        ) == unordered(
             [
                 {
                     "key": "0a66e67b36bcc42197f05beaed08e373",
@@ -1213,23 +1322,40 @@ class TestGtfsUtilsV2:
         assert len(result) == 2
         assert result.to_dict(orient="records") == unordered(
             [
-                {"feed_key": "4321a7e3901b2275805494a746ec1c6a", "arrival_hour": 11, "departure_hour": 11},
-                {"feed_key": "4321a7e3901b2275805494a746ec1c6a", "arrival_hour": 11, "departure_hour": 11},
+                {
+                    "feed_key": "4321a7e3901b2275805494a746ec1c6a",
+                    "arrival_hour": 11,
+                    "departure_hour": 11,
+                },
+                {
+                    "feed_key": "4321a7e3901b2275805494a746ec1c6a",
+                    "arrival_hour": 11,
+                    "departure_hour": 11,
+                },
             ]
         )
 
     @pytest.mark.vcr
     def test_get_stop_times_get_df_false(self, trip):
-        result = get_stop_times(trip_df=trip, operator_feeds=["4321a7e3901b2275805494a746ec1c6a"], get_df=False)
+        result = get_stop_times(
+            trip_df=trip,
+            operator_feeds=["4321a7e3901b2275805494a746ec1c6a"],
+            get_df=False,
+        )
 
         assert isinstance(result, sqlalchemy.sql.selectable.Select)
 
     @pytest.mark.vcr
     def test_get_stop_times_no_trip_df(self):
-        result = get_stop_times(selected_date="2025-11-24", operator_feeds=["918ed58c79d05e956cf6f0c15e2a9902"])
+        result = get_stop_times(
+            selected_date="2025-11-24",
+            operator_feeds=["918ed58c79d05e956cf6f0c15e2a9902"],
+        )
 
         assert len(result) == 1
-        assert result.drop(columns=["_feed_valid_from"]).to_dict(orient="records") == unordered(
+        assert result.drop(columns=["_feed_valid_from"]).to_dict(
+            orient="records"
+        ) == unordered(
             [
                 {
                     "key": "af69a8e874fd726f64bcc1a9992ae8ce",
@@ -1284,7 +1410,9 @@ class TestGtfsUtilsV2:
         )
 
         assert len(result) == 1
-        assert result[["key", "feed_key", "trip_id", "stop_id"]].to_dict(orient="records") == [
+        assert result[["key", "feed_key", "trip_id", "stop_id"]].to_dict(
+            orient="records"
+        ) == [
             {
                 "key": "952a6434038bef86c05f25a2d13f6dda",
                 "feed_key": "4321a7e3901b2275805494a746ec1c6a",
@@ -1294,7 +1422,9 @@ class TestGtfsUtilsV2:
         ]
 
     def test_get_stop_times_no_operator_feeds(self):
-        with pytest.raises(ValueError, match="Supply list of feed keys or operator names!"):
+        with pytest.raises(
+            ValueError, match="Supply list of feed keys or operator names!"
+        ):
             get_stop_times(selected_date="2025-11-01")
 
     @pytest.mark.vcr
@@ -1313,7 +1443,9 @@ class TestGtfsUtilsV2:
             "2f506f822a5f9b2afa48bda762a5e81d",
         )
 
-    @pytest.mark.default_cassette("TestGtfsUtilsV2.test_filter_to_public_schedule_gtfs_dataset_keys.yaml")
+    @pytest.mark.default_cassette(
+        "TestGtfsUtilsV2.test_filter_to_public_schedule_gtfs_dataset_keys.yaml"
+    )
     @pytest.mark.vcr
     def test_filter_to_public_schedule_gtfs_dataset_keys_get_df(self):
         result = filter_to_public_schedule_gtfs_dataset_keys(get_df=True)

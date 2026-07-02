@@ -75,7 +75,10 @@ class TestScheduleRtUtils:
                     "gtfs_dataset_key": "372a06b593e1716d1c911b1d1d35bedd",
                     "gtfs_dataset_name": "Santa Ynez Mecatran Schedule",
                 },
-                {"gtfs_dataset_key": "8aed0709366badf9342e03d0a2d72b8d", "gtfs_dataset_name": "SLO Trip Updates"},
+                {
+                    "gtfs_dataset_key": "8aed0709366badf9342e03d0a2d72b8d",
+                    "gtfs_dataset_name": "SLO Trip Updates",
+                },
             ]
         )
 
@@ -99,7 +102,9 @@ class TestScheduleRtUtils:
 
     def test_filter_dim_gtfs_datasets_keep_cols_key_missing(self):
         with pytest.raises(KeyError, match="Include key in keep_cols list"):
-            filter_dim_gtfs_datasets(keep_cols=["name", "type", "regional_feed_type", "uri", "base64_url"])
+            filter_dim_gtfs_datasets(
+                keep_cols=["name", "type", "regional_feed_type", "uri", "base64_url"]
+            )
 
     @pytest.mark.vcr
     def test_get_organization_id_no_merge_cols(self):
@@ -123,7 +128,9 @@ class TestScheduleRtUtils:
 
     def test_get_organization_id_invalid_merge_cols(self):
         with pytest.raises(KeyError, match="Unable to detect which GTFS quartet"):
-            get_organization_id(df=pd.DataFrame(), date="2025-10-12", merge_cols=["notreal"])
+            get_organization_id(
+                df=pd.DataFrame(), date="2025-10-12", merge_cols=["notreal"]
+            )
 
     @pytest.mark.vcr
     def test_filter_dim_county_geography(self):
@@ -136,7 +143,10 @@ class TestScheduleRtUtils:
                     "organization_name": "City of Rosemead",
                     "caltrans_district": "07 - Los Angeles / Ventura",
                 },
-                {"organization_name": "Via / Remix Inc.", "caltrans_district": "07 - Los Angeles / Ventura"},
+                {
+                    "organization_name": "Via / Remix Inc.",
+                    "caltrans_district": "07 - Los Angeles / Ventura",
+                },
             ]
         )
 
@@ -191,7 +201,9 @@ class TestScheduleRtUtils:
 
     @pytest.mark.vcr
     def test_filter_dim_organizations_additional_keep_cols(self):
-        result = filter_dim_organizations(keep_cols=["key", "name", "organization_type"])
+        result = filter_dim_organizations(
+            keep_cols=["key", "name", "organization_type"]
+        )
 
         assert len(result) == 3
         assert result.to_dict(orient="records") == unordered(
@@ -224,8 +236,14 @@ class TestScheduleRtUtils:
         assert len(result) == 2
         assert result.to_dict(orient="records") == unordered(
             [
-                {"name": "City of Mission Viejo", "organization_source_record_id": "reckGS8egMZryjbX7"},
-                {"name": "City of Patterson", "organization_source_record_id": "recyqZ1zbZMkeA7Vf"},
+                {
+                    "name": "City of Mission Viejo",
+                    "organization_source_record_id": "reckGS8egMZryjbX7",
+                },
+                {
+                    "name": "City of Patterson",
+                    "organization_source_record_id": "recyqZ1zbZMkeA7Vf",
+                },
             ]
         )
 
@@ -267,7 +285,9 @@ class TestScheduleRtUtils:
         )
 
     @pytest.mark.vcr
-    def test_sample_gtfs_dataset_key_to_organization_crosswalk_subset_gtfs_dataset_cols(self):
+    def test_sample_gtfs_dataset_key_to_organization_crosswalk_subset_gtfs_dataset_cols(
+        self,
+    ):
         dataframe = pd.DataFrame(
             data=[
                 {
