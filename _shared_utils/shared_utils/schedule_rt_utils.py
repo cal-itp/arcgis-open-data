@@ -25,7 +25,9 @@ from sqlalchemy import String, and_, cast, func, select
 PACIFIC_TIMEZONE = "US/Pacific"
 
 
-def localize_timestamp_col(df: dd.DataFrame, timestamp_col: Union[str, list]) -> dd.DataFrame:
+def localize_timestamp_col(
+    df: dd.DataFrame, timestamp_col: Union[str, list]
+) -> dd.DataFrame:
     """
     RT vehicle timestamps are given in UTC.
     Localize these to Pacific Time.
@@ -44,7 +46,9 @@ def localize_timestamp_col(df: dd.DataFrame, timestamp_col: Union[str, list]) ->
             )
         elif isinstance(df, (pd.DataFrame, gpd.GeoDataFrame)):
             localized_timestamp_col = (
-                pd.to_datetime(df[c], utc=True).dt.tz_convert(PACIFIC_TIMEZONE).apply(lambda t: t.replace(tzinfo=None))
+                pd.to_datetime(df[c], utc=True)
+                .dt.tz_convert(PACIFIC_TIMEZONE)
+                .apply(lambda t: t.replace(tzinfo=None))
             )
 
         df[f"{c}_local"] = localized_timestamp_col
@@ -71,7 +75,14 @@ def get_schedule_gtfs_dataset_key(
 
 
 def filter_dim_gtfs_datasets(
-    keep_cols: list[str] = ["key", "name", "type", "regional_feed_type", "uri", "base64_url"],
+    keep_cols: list[str] = [
+        "key",
+        "name",
+        "type",
+        "regional_feed_type",
+        "uri",
+        "base64_url",
+    ],
     custom_filtering: dict = None,
     get_df: bool = True,
 ) -> Union[pd.DataFrame, sqlalchemy.sql.selectable.Select]:
@@ -143,8 +154,10 @@ def get_organization_id(
             select(DimProviderGtfsData)
             .distinct()
             .where(
-                and_(func.datetime(DimProviderGtfsData._valid_from, PACIFIC_TIMEZONE)) <= func.datetime(date),
-                func.datetime(DimProviderGtfsData._valid_to, PACIFIC_TIMEZONE) >= func.datetime(date),
+                and_(func.datetime(DimProviderGtfsData._valid_from, PACIFIC_TIMEZONE))
+                <= func.datetime(date),
+                func.datetime(DimProviderGtfsData._valid_to, PACIFIC_TIMEZONE)
+                >= func.datetime(date),
             )
         )
 
@@ -159,7 +172,8 @@ def get_organization_id(
         # rather than alphabetical.
         # (organization names Foothill Transit and City of Duarte)
         dim_provider_gtfs_data = dim_provider_gtfs_data.sort_values(
-            merge_cols + ["_valid_to", "_valid_from"], ascending=sorting + [False, False]
+            merge_cols + ["_valid_to", "_valid_from"],
+            ascending=sorting + [False, False],
         ).reset_index(drop=True)[merge_cols + keep_cols]
 
         df2 = pd.merge(df, dim_provider_gtfs_data, on=merge_cols, how="inner")
@@ -203,13 +217,20 @@ def filter_dim_county_geography(
         select(*columns)
         .join(
             DimCountyGeography,
-            DimCountyGeography.key == BridgeOrganizationXHeadquartersCountyGeography.county_geography_key,
+            DimCountyGeography.key
+            == BridgeOrganizationXHeadquartersCountyGeography.county_geography_key,
         )
         .where(
             and_(
-                func.datetime(BridgeOrganizationXHeadquartersCountyGeography._valid_from, PACIFIC_TIMEZONE)
+                func.datetime(
+                    BridgeOrganizationXHeadquartersCountyGeography._valid_from,
+                    PACIFIC_TIMEZONE,
+                )
                 <= func.datetime(date),
-                func.datetime(BridgeOrganizationXHeadquartersCountyGeography._valid_to, PACIFIC_TIMEZONE)
+                func.datetime(
+                    BridgeOrganizationXHeadquartersCountyGeography._valid_to,
+                    PACIFIC_TIMEZONE,
+                )
                 >= func.datetime(date),
             )
         )
@@ -219,7 +240,9 @@ def filter_dim_county_geography(
         df = pd.read_sql(statement, session.bind)
 
     return (
-        df[list(set(["organization_name", "caltrans_district"] + keep_cols))].drop_duplicates().reset_index(drop=True)
+        df[list(set(["organization_name", "caltrans_district"] + keep_cols))]
+        .drop_duplicates()
+        .reset_index(drop=True)
     )
 
 
@@ -236,7 +259,9 @@ def filter_dim_organizations(
 
     for column in keep_cols:
         if column == "source_record_id":
-            dim_organization_columns.append(DimOrganization.source_record_id.label("organization_source_record_id"))
+            dim_organization_columns.append(
+                DimOrganization.source_record_id.label("organization_source_record_id")
+            )
         else:
             dim_organization_columns.append(getattr(DimOrganization, column))
 
@@ -257,7 +282,9 @@ def filter_dim_organizations(
 def sample_gtfs_dataset_key_to_organization_crosswalk(
     df: pd.DataFrame,
     date: str,
-    quartet_data: Literal["schedule", "vehicle_positions", "service_alerts", "trip_updates"],
+    quartet_data: Literal[
+        "schedule", "vehicle_positions", "service_alerts", "trip_updates"
+    ],
     dim_gtfs_dataset_cols: list[str] = [
         "key",
         "name",
@@ -305,7 +332,9 @@ def sample_gtfs_dataset_key_to_organization_crosswalk(
         "source_record_id": f"{quartet_data}_source_record_id",
     }
 
-    feeds_with_quartet_info = feeds_with_quartet_info.rename(columns=GTFS_DATASET_RENAME_DICT)
+    feeds_with_quartet_info = feeds_with_quartet_info.rename(
+        columns=GTFS_DATASET_RENAME_DICT
+    )
 
     # (3) From quartet, get to organization name
     merge_cols = [i for i in feeds_with_quartet_info.columns if quartet_data in i]
@@ -317,18 +346,25 @@ def sample_gtfs_dataset_key_to_organization_crosswalk(
     )
 
     # (4) Merge in dim_orgs to get organization info - everything except caltrans_district is found here
-    ORG_RENAME_DICT = {"source_record_id": "organization_source_record_id", "name": "organization_name"}
+    ORG_RENAME_DICT = {
+        "source_record_id": "organization_source_record_id",
+        "name": "organization_name",
+    }
     orgs = filter_dim_organizations(
         keep_cols=dim_organization_cols,
         get_df=True,
     ).rename(columns=ORG_RENAME_DICT)
 
-    feeds_with_org_info = pd.merge(feeds_with_org_id, orgs, on="organization_source_record_id")
+    feeds_with_org_info = pd.merge(
+        feeds_with_org_id, orgs, on="organization_source_record_id"
+    )
 
     # (5) Merge in dim_county_geography to get caltrans_district
     # https://github.com/cal-itp/data-analyses/issues/1282
     district = filter_dim_county_geography(date, dim_county_geography_cols)
 
-    feeds_with_district = pd.merge(feeds_with_org_info, district, on="organization_name")
+    feeds_with_district = pd.merge(
+        feeds_with_org_info, district, on="organization_name"
+    )
 
     return feeds_with_district

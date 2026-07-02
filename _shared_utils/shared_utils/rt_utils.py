@@ -23,31 +23,46 @@ BUCKET_NAME = "calitp-analytics-data"
 BUCKET_DIR = "data-analyses/rt_delay"
 GCS_FILE_PATH = f"gs://{BUCKET_NAME}/{BUCKET_DIR}/"
 EXPORT_PATH = f"{GCS_FILE_PATH}cached_views/"
-SHN_PATH = "gs://calitp-analytics-data/data-analyses/bus_service_increase/highways.parquet"
+SHN_PATH = (
+    "gs://calitp-analytics-data/data-analyses/bus_service_increase/highways.parquet"
+)
 VP_FILE_PATH = f"gs://{BUCKET_NAME}/data-analyses/rt_segment_speeds/"
 V2_SUBFOLDER = "v2_cached_views/"
 
 MPH_PER_MPS = 2.237  # use to convert meters/second to miles/hour
 METERS_PER_MILE = 1609.34
 
-SPEEDMAP_LEGEND_URL = "https://storage.googleapis.com/calitp-map-tiles/speeds_legend.svg"
-VARIANCE_LEGEND_URL = "https://storage.googleapis.com/calitp-map-tiles/variance_legend.svg"
-ACCESS_SPEEDMAP_LEGEND_URL = "https://storage.googleapis.com/calitp-map-tiles/speeds_legend_color_access.svg"
+SPEEDMAP_LEGEND_URL = (
+    "https://storage.googleapis.com/calitp-map-tiles/speeds_legend.svg"
+)
+VARIANCE_LEGEND_URL = (
+    "https://storage.googleapis.com/calitp-map-tiles/variance_legend.svg"
+)
+ACCESS_SPEEDMAP_LEGEND_URL = (
+    "https://storage.googleapis.com/calitp-map-tiles/speeds_legend_color_access.svg"
+)
 
 ACCESS_ZERO_THIRTY_COLORSCALE = branca.colormap.step.RdBu_10.scale(vmin=0, vmax=30)
 ACCESS_ZERO_THIRTY_COLORSCALE.caption = "Speed (miles per hour)"
 VARIANCE_COLORS = branca.colormap.step.Blues_06.colors[1:]  # actual breaks will vary
 VARIANCE_RANGE = np.arange(1, 2.8, 0.3)
 VARIANCE_FIXED_COLORSCALE = branca.colormap.StepColormap(
-    colors=VARIANCE_COLORS, index=VARIANCE_RANGE, vmin=min(VARIANCE_RANGE), vmax=max(VARIANCE_RANGE)
+    colors=VARIANCE_COLORS,
+    index=VARIANCE_RANGE,
+    vmin=min(VARIANCE_RANGE),
+    vmax=max(VARIANCE_RANGE),
 )
-VARIANCE_FIXED_COLORSCALE.caption = "80th percentile to 20th percentile speed ratio (variation in speeds)"
+VARIANCE_FIXED_COLORSCALE.caption = (
+    "80th percentile to 20th percentile speed ratio (variation in speeds)"
+)
 
 # Datetime formats
 DATE_WEEKDAY_FMT = "%b %d (%a)"  # Jun 01 (Wed) for 6/1/22
 MONTH_DAY_FMT = "%m_%d"  # 6_01 for 6/1/22
 HOUR_MIN_FMT = "%H:%M"  # 08:00 for 8 am, 13:00 for 1pm
-HOUR_MIN_SEC_FMT = "%H:%M:%S"  # 08:15:05 for 8:15 am + 5 sec, 13:15:05 for 1:15pm + 5 sec
+HOUR_MIN_SEC_FMT = (
+    "%H:%M:%S"  # 08:15:05 for 8:15 am + 5 sec, 13:15:05 for 1:15pm + 5 sec
+)
 FULL_DATE_FMT = "%Y-%m-%d"  # 2022-06-01 for 6/1/22
 
 # decide to use v1 cached data from gcs or v2 warehouse cached data/fresh queries
@@ -168,7 +183,9 @@ def add_route_cardinal_direction(
 
     elif isinstance(df, gpd.GeoDataFrame):
         df = df.assign(
-            route_primary_direction=df.apply(lambda x: primary_cardinal_direction(x[origin], x[destination]), axis=1)
+            route_primary_direction=df.apply(
+                lambda x: primary_cardinal_direction(x[origin], x[destination]), axis=1
+            )
         )
 
     # In cases where you don't care exactly if it's southbound or northbound,
@@ -231,7 +248,9 @@ def get_legacy_speedmaps_ix_df(analysis_date: dt.date) -> pd.DataFrame:
     """
     )
 
-    daily_service = daily_service.merge(org_feeds_datasets, on="schedule_gtfs_dataset_key")
+    daily_service = daily_service.merge(
+        org_feeds_datasets, on="schedule_gtfs_dataset_key"
+    )
 
     return daily_service
 
@@ -263,11 +282,16 @@ def get_shapes(ix_df: pd.DataFrame) -> gpd.GeoDataFrame:
     else:
         feed_key_list = list(ix_df.feed_key.unique())
         org_shapes = gtfs_utils_v2.get_shapes(
-            service_date, feed_key_list, crs=geography_utils.CA_NAD83Albers_m, shape_cols=shape_cols
+            service_date,
+            feed_key_list,
+            crs=geography_utils.CA_NAD83Albers_m,
+            shape_cols=shape_cols,
         )
         # invalid geos are nones in new df...
         org_shapes = org_shapes.dropna(subset=["geometry"])
-        assert isinstance(org_shapes, gpd.GeoDataFrame) and not org_shapes.empty, "shapes must not be empty"
+        assert isinstance(org_shapes, gpd.GeoDataFrame) and not org_shapes.empty, (
+            "shapes must not be empty"
+        )
         utils.geoparquet_gcs_export(org_shapes, GCS_FILE_PATH + V2_SUBFOLDER, filename)
 
     return org_shapes
@@ -332,17 +356,25 @@ def arrowize_segment(line_geometry, buffer_distance: int = 20):
             begin_segment.length + arrow_distance,
             begin_segment.length + arrow_distance,
         )
-        poly = shapely.geometry.Polygon((r_pt, end, l_pt))  # triangle to cut bottom of arrow
+        poly = shapely.geometry.Polygon(
+            (r_pt, end, l_pt)
+        )  # triangle to cut bottom of arrow
         # ends to the left
-        end_segment = shapely.ops.substring(segment, segment.length - st_end_distance, segment.length)
-        end = shapely.ops.substring(end_segment, end_segment.length, end_segment.length)  # correct
+        end_segment = shapely.ops.substring(
+            segment, segment.length - st_end_distance, segment.length
+        )
+        end = shapely.ops.substring(
+            end_segment, end_segment.length, end_segment.length
+        )  # correct
         r_shift = end_segment.parallel_offset(shift_distance, "right")
         r_pt = shapely.ops.substring(r_shift, 0, 0)
         r_pt2 = shapely.ops.substring(r_shift, r_shift.length, r_shift.length)
         l_shift = end_segment.parallel_offset(shift_distance, "left")
         l_pt = shapely.ops.substring(l_shift, 0, 0)
         l_pt2 = shapely.ops.substring(l_shift, l_shift.length, l_shift.length)
-        t1 = shapely.geometry.Polygon((l_pt2, end, l_pt))  # triangles to cut top of arrow
+        t1 = shapely.geometry.Polygon(
+            (l_pt2, end, l_pt)
+        )  # triangles to cut top of arrow
         t2 = shapely.geometry.Polygon((r_pt2, end, r_pt))
 
         segment_clip_mask = shapely.geometry.MultiPolygon((poly, t1, t2))
@@ -358,7 +390,9 @@ def arrowize_segment(line_geometry, buffer_distance: int = 20):
         return line_geometry.simplify(tolerance=5).buffer(buffer_distance)
 
 
-def arrowize_by_frequency(row, frequency_col="trips_per_hour", frequency_thresholds=(1.5, 3, 6)):
+def arrowize_by_frequency(
+    row, frequency_col="trips_per_hour", frequency_thresholds=(1.5, 3, 6)
+):
     if row[frequency_col] < frequency_thresholds[0]:
         row.geometry = arrowize_segment(row.geometry, buffer_distance=15)
     elif row[frequency_col] < frequency_thresholds[1]:
@@ -375,7 +409,7 @@ def describe_slowest(row):
     full_description = (
         f"{row.route_short_name}{description}, {row.direction}: "
         f"{round(row.median_trip_mph, 1)} mph median trip speed for "
-        f'{row.num_trips} trip{"s" if row.num_trips > 1 else ""}'
+        f"{row.num_trips} trip{'s' if row.num_trips > 1 else ''}"
     )
     row["full_description"] = full_description
     return row

@@ -40,13 +40,18 @@ def spa_map_export_link(
     if verbose:
         print(f"writing to {path}")
     if fs.exists(path) and not overwrite:
-        print(f"file already exists at {path}, not overwriting, use overwrite = True to overwrite")
+        print(
+            f"file already exists at {path}, not overwriting, use overwrite = True to overwrite"
+        )
     else:
         with fs.open(path, "wb") as writer:  # write out to public-facing GCS?
             with gzip.GzipFile(fileobj=writer, mode="w") as gz:
                 gz.write(geojson_bytes)
     if cache_seconds != 3600:
-        fs.setxattrs(path, fixed_key_metadata={"cache_control": f"public, max-age={cache_seconds}"})
+        fs.setxattrs(
+            path,
+            fixed_key_metadata={"cache_control": f"public, max-age={cache_seconds}"},
+        )
     base64state = base64.urlsafe_b64encode(json.dumps(state).encode()).decode()
     spa_map_url = f"{site}?state={base64state}"
     return spa_map_url
@@ -93,14 +98,19 @@ def set_state_export(
     Returns dict with state dictionary and map URL. Can call multiple times and supply
     previous state as existing_state to create multilayered maps.
     """
-    assert (
-        map_type in SPA_MAP_TYPES
-    ), "map_type must be a supported type from data-infra or None (update list in webmap_utils if applicable)"
+    assert map_type in SPA_MAP_TYPES, (
+        "map_type must be a supported type from data-infra or None (update list in webmap_utils if applicable)"
+    )
     assert not gdf.empty, "geodataframe is empty!"
     if existing_state and "state_dict" in existing_state.keys():
         existing_state = existing_state["state_dict"]
     existing_state = copy.deepcopy(existing_state)
-    spa_map_state = existing_state or {"name": "null", "layers": [], "lat_lon": (), "zoom": 13}
+    spa_map_state = existing_state or {
+        "name": "null",
+        "layers": [],
+        "lat_lon": (),
+        "zoom": 13,
+    }
     path = f"{bucket}{subfolder}{filename}.geojson.gz"
     gdf = gdf.to_crs(geography_utils.WGS84)
     if cmap and color_col:
@@ -133,7 +143,11 @@ def set_state_export(
     return {
         "state_dict": spa_map_state,
         "spa_link": spa_map_export_link(
-            gdf=gdf, path=path, state=spa_map_state, cache_seconds=cache_seconds, overwrite=overwrite
+            gdf=gdf,
+            path=path,
+            state=spa_map_state,
+            cache_seconds=cache_seconds,
+            overwrite=overwrite,
         ),
     }
 
@@ -142,11 +156,15 @@ def render_spa_link(spa_map_url: str, text="Full Map") -> None:
     """
     Call within a notebook to render a link to your webmap.
     """
-    display(Markdown(f'<a href="{spa_map_url}" target="_blank">Open {text} in New Tab</a>'))
+    display(
+        Markdown(f'<a href="{spa_map_url}" target="_blank">Open {text} in New Tab</a>')
+    )
     return
 
 
-def display_spa_map(spa_map_url: str, width: int = 1000, height: int = 650, title: str = "Map Image") -> None:
+def display_spa_map(
+    spa_map_url: str, width: int = 1000, height: int = 650, title: str = "Map Image"
+) -> None:
     """
     Display map from external simple web app in the notebook/JupyterBook context via an IFrame.
     Width/height defaults are current best option for JupyterBook, don't change for portfolio use
@@ -196,7 +214,9 @@ def add_inner_labels_caption(svg, labels, spacing, caption):
     return export_svg
 
 
-def export_legend(cmap: branca.colormap.StepColormap, filename: str, inner_labels: list = []):
+def export_legend(
+    cmap: branca.colormap.StepColormap, filename: str, inner_labels: list = []
+):
     """
     Given a branca colormap, export its html and reformat for successful display in webmap.
 
@@ -205,7 +225,9 @@ def export_legend(cmap: branca.colormap.StepColormap, filename: str, inner_label
     assert len(inner_labels) in [
         0,
         4,
-    ], "currently must supply 4 or 0 inner labels for spacing, outer labels are provided by default"
+    ], (
+        "currently must supply 4 or 0 inner labels for spacing, outer labels are provided by default"
+    )
     legend = add_lines_header(cmap._repr_html_())
     legend = add_inner_labels_caption(legend, inner_labels, 100, cmap.caption)
 
@@ -225,7 +247,9 @@ def categorical_cmap(cmap: branca.colormap, categories: list) -> dict:
     n_categories = len(categories)
     n_colors = len(cmap_colors_rgb)
     if n_categories > n_colors:
-        print(f"{n_categories} categories exceed {n_colors} colors, colors will be duplicated")
+        print(
+            f"{n_categories} categories exceed {n_colors} colors, colors will be duplicated"
+        )
         cmap_multiplier = (n_categories // n_colors) + 1
         cmap_colors_rgb = cmap_colors_rgb * cmap_multiplier
 

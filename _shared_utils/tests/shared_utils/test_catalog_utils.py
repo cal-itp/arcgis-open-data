@@ -8,7 +8,9 @@ import shared_utils.catalog_utils as catalog_utils
 class TestCatalogUtils:
     @pytest.fixture()
     def setup(self, tmp_path: Path) -> Callable:
-        def setup_with(nested_directory: str = "", in_home_directory: bool = True) -> list[Path]:
+        def setup_with(
+            nested_directory: str = "", in_home_directory: bool = True
+        ) -> list[Path]:
             home_path = tmp_path.joinpath("home")
             home_path.mkdir()
 
@@ -63,5 +65,8 @@ class TestCatalogUtils:
     ) -> None:
         home_path, current_path, _ = setup(in_home_directory=False)
 
-        with pytest.raises(RuntimeError, match="The data-analyses repo should be located in your home directory."):
+        with pytest.raises(
+            RuntimeError,
+            match="The data-analyses repo should be located in your home directory.",
+        ):
             catalog_utils.get_catalog_file("test-file", home_path, current_path)

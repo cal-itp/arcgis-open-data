@@ -52,7 +52,9 @@ def make_routes_gdf(
     shapes = ddf.compute()
 
     # convert to geopandas; re-project if needed
-    gdf = gpd.GeoDataFrame(shapes.drop(columns="pt_array"), geometry="geometry", crs=WGS84).to_crs(crs)
+    gdf = gpd.GeoDataFrame(
+        shapes.drop(columns="pt_array"), geometry="geometry", crs=WGS84
+    ).to_crs(crs)
 
     return gdf
 
@@ -77,7 +79,9 @@ def create_point_geometry(
     crs: str, coordinate reference system for point geometry
     """
     # Default CRS for stop_lon, stop_lat is WGS84
-    df = df.assign(geometry=gpd.points_from_xy(df[longitude_col], df[latitude_col], crs=WGS84))
+    df = df.assign(
+        geometry=gpd.points_from_xy(df[longitude_col], df[latitude_col], crs=WGS84)
+    )
 
     # ALlow projection to different CRS
     gdf = gpd.GeoDataFrame(df).to_crs(crs)
@@ -154,7 +158,9 @@ def explode_segments(
 
     gdf_exploded = gdf_exploded.assign(
         segment_sequence=(
-            gdf_exploded.groupby(group_cols, observed=True, group_keys=False).temp_index.transform("rank")
+            gdf_exploded.groupby(
+                group_cols, observed=True, group_keys=False
+            ).temp_index.transform("rank")
             - 1
             # there are NaNs, but since they're a single segment, just use 0
         )
@@ -175,7 +181,9 @@ def explode_segments(
     return gdf_exploded2
 
 
-return_options = Literal["point", "line", "polygon", "missing", "linearring", "geometry_collection"]
+return_options = Literal[
+    "point", "line", "polygon", "missing", "linearring", "geometry_collection"
+]
 
 
 def find_geometry_type(

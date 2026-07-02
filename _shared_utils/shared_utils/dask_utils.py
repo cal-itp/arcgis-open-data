@@ -30,7 +30,9 @@ def gcs_geopandas():
     return GCSGeoPandas()
 
 
-def concat_and_export(gcs_folder: str, file_name: str, filetype: Literal["df", "gdf"] = "df"):
+def concat_and_export(
+    gcs_folder: str, file_name: str, filetype: Literal["df", "gdf"] = "df"
+):
     """
     Read in a folder of partitioned parquets and export as 1 parquet.
     In the filename, include the full GCS path.
@@ -140,7 +142,11 @@ def import_df_func(
     https://blog.dask.org/2023/04/12/from-map
     """
     if data_type == "gdf":
-        df = gcs_geopandas().read_parquet(f"{path}_{one_date}.parquet", **kwargs).drop_duplicates()
+        df = (
+            gcs_geopandas()
+            .read_parquet(f"{path}_{one_date}.parquet", **kwargs)
+            .drop_duplicates()
+        )
 
     else:
         df = (
@@ -168,7 +174,9 @@ def import_ddf_func(path, date_list, data_type, **kwargs):
     if data_type == "df":
         ddf = dd.multi.concat(
             [
-                dd.read_parquet(f"{path}_{one_date}.parquet", **kwargs).assign(service_date=one_date)
+                dd.read_parquet(f"{path}_{one_date}.parquet", **kwargs).assign(
+                    service_date=one_date
+                )
                 for one_date in date_list
             ],
             axis=0,
@@ -178,7 +186,9 @@ def import_ddf_func(path, date_list, data_type, **kwargs):
     elif data_type == "gdf":
         ddf = dd.multi.concat(
             [
-                dg.read_parquet(f"{path}_{one_date}.parquet", **kwargs).assign(service_date=one_date)
+                dg.read_parquet(f"{path}_{one_date}.parquet", **kwargs).assign(
+                    service_date=one_date
+                )
                 for one_date in date_list
             ],
             axis=0,
@@ -197,7 +207,9 @@ def get_ddf(paths, date_list, data_type, get_pandas: bool = False, **kwargs):
     https://docs.dask.org/en/latest/generated/dask.dataframe.from_map.html
     https://blog.dask.org/2023/04/12/from-map
     """
-    ddf = dd.from_map(import_df_func, paths, date_list, data_type=data_type, **kwargs).drop_duplicates()
+    ddf = dd.from_map(
+        import_df_func, paths, date_list, data_type=data_type, **kwargs
+    ).drop_duplicates()
 
     if get_pandas:
         ddf = ddf.compute()

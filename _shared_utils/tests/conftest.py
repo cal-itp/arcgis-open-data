@@ -33,7 +33,15 @@ def vcr_config():
             "iamcredentials.googleapis.com",
             "oauth2.googleapis.com",
         ],
-        "match_on": ["method", "scheme", "host", "port", "path", "query", "db_query_body"],
+        "match_on": [
+            "method",
+            "scheme",
+            "host",
+            "port",
+            "path",
+            "query",
+            "db_query_body",
+        ],
     }
 
 
@@ -43,7 +51,9 @@ def db_query_body_matcher(request_1: Request, request_2: Request):
     if len(unique_bodies) == 1 and unique_bodies[0] is None:
         return True
     elif None in unique_bodies:
-        assert False, f"Request bodies cannot be compared.\n Expected: {request_2.body}\n Actual: {request_1.body}"
+        assert False, (
+            f"Request bodies cannot be compared.\n Expected: {request_2.body}\n Actual: {request_1.body}"
+        )
     else:
         body_1 = json.loads(request_1.body)
         body_2 = json.loads(request_2.body)
@@ -52,9 +62,9 @@ def db_query_body_matcher(request_1: Request, request_2: Request):
 
         for key, value in body_1.items():
             if key not in excluded_body_entries:
-                assert (
-                    value == body_2[key]
-                ), f"Request bodies do not match on {key}.\n Expected: {body_2[key]}\n Actual: {value}"
+                assert value == body_2[key], (
+                    f"Request bodies do not match on {key}.\n Expected: {body_2[key]}\n Actual: {value}"
+                )
 
         return True
 

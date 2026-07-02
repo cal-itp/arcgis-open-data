@@ -46,7 +46,9 @@ def format_table_name(name, is_staging=False, full_name=False):
 
 
 class CreateTableAs(Executable, ClauseElement):
-    def __init__(self, name, select, replace=False, if_not_exists=False, partition_by=None):
+    def __init__(
+        self, name, select, replace=False, if_not_exists=False, partition_by=None
+    ):
         self.name = name
         self.select = select
         self.replace = replace
@@ -62,7 +64,9 @@ def visit_insert_from_select(element, compiler, **kw):
     if_not_exists = " IF NOT EXISTS" if element.if_not_exists else ""
 
     # TODO: visit partition by clause
-    partition_by = f" PARTITION BY {element.partition_by}" if element.partition_by else ""
+    partition_by = (
+        f" PARTITION BY {element.partition_by}" if element.partition_by else ""
+    )
 
     return f"""
         CREATE{or_replace} TABLE{if_not_exists} {name}
@@ -123,14 +127,16 @@ def to_snakecase(df):
     """
 
     return df.rename(
-        columns=lambda s: s.lower()
-        .replace(" ", "_")
-        .replace("&", "_")
-        .replace("(", "_")
-        .replace(")", "_")
-        .replace(".", "_")
-        .replace("-", "_")
-        .replace("/", "_")
-        .replace('"', "")
-        .replace("'", "")
+        columns=lambda s: (
+            s.lower()
+            .replace(" ", "_")
+            .replace("&", "_")
+            .replace("(", "_")
+            .replace(")", "_")
+            .replace(".", "_")
+            .replace("-", "_")
+            .replace("/", "_")
+            .replace('"', "")
+            .replace("'", "")
+        )
     ).rename(columns=lambda s: "_%s" % s if s[0].isdigit() else s)

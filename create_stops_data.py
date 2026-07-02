@@ -42,7 +42,10 @@ def prep_stops(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     stop_geom = gdf[stop_group_cols + ["geometry"]].drop_duplicates()
 
     gdf2 = (
-        gdf.sort_values(stop_group_cols + ["total_stop_arrivals"], ascending=[True for c in stop_group_cols] + [False])
+        gdf.sort_values(
+            stop_group_cols + ["total_stop_arrivals"],
+            ascending=[True for c in stop_group_cols] + [False],
+        )
         .groupby(stop_group_cols)
         .agg(
             {
@@ -100,7 +103,9 @@ def add_distance_to_state_highway(stops: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """
     orig_crs = stops.crs
 
-    shn = catalog.state_highway_network.read()[["District", "geometry"]].to_crs(geography_utils.CA_NAD83Albers_m)
+    shn = catalog.state_highway_network.read()[["District", "geometry"]].to_crs(
+        geography_utils.CA_NAD83Albers_m
+    )
 
     stop_cols = ["name", "stop_id", "stop_name"]
 
@@ -115,9 +120,16 @@ def add_distance_to_state_highway(stops: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
         .reset_index(drop=True)
     )
 
-    stops2 = pd.merge(stops, nearest_shn_result[stop_cols + ["meters_to_ca_state_highway"]], on=stop_cols, how="inner")
+    stops2 = pd.merge(
+        stops,
+        nearest_shn_result[stop_cols + ["meters_to_ca_state_highway"]],
+        on=stop_cols,
+        how="inner",
+    )
 
-    stops2 = stops2.assign(meters_to_ca_state_highway=stops2.meters_to_ca_state_highway.round(1))
+    stops2 = stops2.assign(
+        meters_to_ca_state_highway=stops2.meters_to_ca_state_highway.round(1)
+    )
 
     return stops2.to_crs(orig_crs)
 
@@ -142,12 +154,21 @@ def publish_stops(analysis_month: str) -> gpd.GeoDataFrame:
 
     crosswalk = pd.read_parquet(
         f"{OPEN_DATA_GCS}bridge_gtfs_analysis_name_x_ntd.parquet",
-        columns=["schedule_gtfs_dataset_name", "analysis_name", "caltrans_district_full"],
+        columns=[
+            "schedule_gtfs_dataset_name",
+            "analysis_name",
+            "caltrans_district_full",
+        ],
         filesystem=gcsfs.GCSFileSystem(),
     ).drop_duplicates()  # need this because we might have dupes that differ on other columns in bridge, like organization_source_record_id
 
     # Merge in crosswalk, which will filter out the feeds we don't want to publish
-    stops2 = pd.merge(stops, crosswalk.rename(columns={"schedule_gtfs_dataset_name": "name"}), on=["name"], how="inner")
+    stops2 = pd.merge(
+        stops,
+        crosswalk.rename(columns={"schedule_gtfs_dataset_name": "name"}),
+        on=["name"],
+        how="inner",
+    )
 
     # this is unique on ["name", "stop_id", "stop_name"]
     # there are dupes where same stop_id has slightly different stop_names
@@ -157,16 +178,21 @@ def publish_stops(analysis_month: str) -> gpd.GeoDataFrame:
 
 
 if __name__ == "__main__":
-
     LOG_FILE = "./logs/open_data.log"
     logger.add(LOG_FILE, retention="2 months")
-    logger.add(sys.stderr, format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}", level="INFO")
+    logger.add(
+        sys.stderr,
+        format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
+        level="INFO",
+    )
 
     start = datetime.datetime.now()
 
     stops = publish_stops(analysis_month)
 
-    utils.geoparquet_gcs_export(stops, OPEN_DATA_GCS, f"export/ca_transit_stops_{analysis_month}")
+    utils.geoparquet_gcs_export(
+        stops, OPEN_DATA_GCS, f"export/ca_transit_stops_{analysis_month}"
+    )
     utils.geoparquet_gcs_export(stops, OPEN_DATA_GCS, "export/ca_transit_stops_latest")
 
     end = datetime.datetime.now()

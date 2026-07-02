@@ -16,7 +16,9 @@ def get_catalog_file(catalog_name, home_path=Path.home(), current_path=Path.cwd(
     parent_directory = current_path
 
     if home_path not in current_path.parents:
-        raise RuntimeError("The data-analyses repo should be located in your home directory.")
+        raise RuntimeError(
+            "The data-analyses repo should be located in your home directory."
+        )
 
     while True:
         test_path = parent_directory.joinpath(filename)
@@ -30,7 +32,9 @@ def get_catalog_file(catalog_name, home_path=Path.home(), current_path=Path.cwd(
         parent_directory = parent_directory.parent
 
 
-def get_catalog(catalog_name: Literal["shared_data_catalog", "gtfs_analytics_data"]) -> Path:
+def get_catalog(
+    catalog_name: Literal["shared_data_catalog", "gtfs_analytics_data"],
+) -> Path:
     """
     Grab either the shared_data_catalog (uses intake driver) or
     gtfs_analytics_data catalog (uses OmegaConf yaml parser).
