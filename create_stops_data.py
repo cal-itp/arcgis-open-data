@@ -25,7 +25,7 @@ MONTHLY_STOPS_COLS = [
     "n_days",
     "day_type",
     # stop metrics
-    "total_stop_arrivals",
+    # "total_stop_arrivals",
     "geometry",
     "route_type_array",  # renamed to routetypes
     "route_id_array",  # renamed to route_ids_served, use this to calculate n_routes
