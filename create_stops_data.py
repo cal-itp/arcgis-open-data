@@ -172,7 +172,8 @@ def publish_stops(analysis_month: str) -> gpd.GeoDataFrame:
 
     # this is unique on ["name", "stop_id", "stop_name"]
     # there are dupes where same stop_id has slightly different stop_names
-    stops3 = rename_stop_columns(stops2)
+    # don't keep total_stop_arrivals, use daily arrivals instead 
+    stops3 = rename_stop_columns(stops2).drop(columns=['total_stop_arrivals'])
 
     return stops3
 
