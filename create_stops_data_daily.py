@@ -15,13 +15,12 @@ from update_vars import (analysis_date,
                          GTFS_DATA_DICT,
                          TRAFFIC_OPS_GCS, 
                          RT_SCHED_GCS, SCHED_GCS,
-                         AH_TEST
                         )
 
 import google.auth
 credentials, _ = google.auth.default()
 
-catalog = intake.open_catalog("../_shared_utils/shared_utils/shared_data_catalog.yml")
+catalog = intake.open_catalog("./_shared_utils/shared_utils/shared_data_catalog.yml")
 
 def create_stops_file_for_export(
     date: str,
@@ -39,7 +38,7 @@ def create_stops_file_for_export(
     #     f"{RT_SCHED_GCS}{STOP_FILE}_{date}.parquet",
     #     storage_options={"token": credentials.token}
     # )
-    stops = pd.read_parquet('test_sched_stop_metrics.parquet') 
+    stops = gpd.read_parquet('test_sched_stop_metrics.parquet') 
     stops2 = portfolio_utils.standardize_operator_info_for_exports(stops, date)
 
     time1 = datetime.datetime.now()
@@ -173,7 +172,9 @@ if __name__ == "__main__":
     time0 = datetime.datetime.now()
 
     stops = create_stops_file_for_export(analysis_date)  
-    stops.to_parquet('test_stops.parquet')
+    # for testing
+    stops.pipe(add_distance_to_state_highway).pipe(finalize_export_df).to_parquet('test_stops.parquet')
+
     # published_stops = (
     # patch_previous_dates(
     #     stops,
