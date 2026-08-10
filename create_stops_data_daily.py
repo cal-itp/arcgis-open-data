@@ -33,13 +33,13 @@ def create_stops_file_for_export(
     time0 = datetime.datetime.now()
 
     # Read in parquets
-    STOP_FILE = GTFS_DATA_DICT.rt_vs_schedule_tables.sched_stop_metrics
+    # STOP_FILE = GTFS_DATA_DICT.rt_vs_schedule_tables.sched_stop_metrics
 
-    stops = gpd.read_parquet(
-        f"{RT_SCHED_GCS}{STOP_FILE}_{date}.parquet",
-        storage_options={"token": credentials.token}
-    )
-    
+    # stops = gpd.read_parquet(
+    #     f"{RT_SCHED_GCS}{STOP_FILE}_{date}.parquet",
+    #     storage_options={"token": credentials.token}
+    # )
+    stops = pd.read_parquet('test_sched_stop_metrics.parquet') 
     stops2 = portfolio_utils.standardize_operator_info_for_exports(stops, date)
 
     time1 = datetime.datetime.now()
@@ -173,35 +173,27 @@ if __name__ == "__main__":
     time0 = datetime.datetime.now()
 
     stops = create_stops_file_for_export(analysis_date)  
-    """
-    published_stops = patch_previous_dates(
-        stops, 
-        analysis_date,
-    ).pipe(finalize_export_df)
-
+    stops.to_parquet('test_stops.parquet')
+    # published_stops = (
+    # patch_previous_dates(
+    #     stops,
+    #     analysis_date,
+    # )
     
-    AH: work for later
-    """
-    published_stops = (
-    patch_previous_dates(
-        stops,
-        analysis_date,
-    )
+    # .pipe(portfolio_utils.standardize_operator_info_for_exports, analysis_date)
+    # .pipe(finalize_export_df)
+    # )
+    # utils.geoparquet_gcs_export(
+    #     published_stops,
+    #     TRAFFIC_OPS_GCS,
+    #     f"export/ca_transit_stops_{analysis_date}"
+    # )
     
-    .pipe(portfolio_utils.standardize_operator_info_for_exports, analysis_date)
-    .pipe(finalize_export_df)
-    )
-    utils.geoparquet_gcs_export(
-        published_stops,
-        TRAFFIC_OPS_GCS,
-        f"export/ca_transit_stops_{analysis_date}"
-    )
-    
-    utils.geoparquet_gcs_export(
-        published_stops, 
-        TRAFFIC_OPS_GCS, 
-        "ca_transit_stops"
-    )
+    # utils.geoparquet_gcs_export(
+    #     published_stops, 
+    #     TRAFFIC_OPS_GCS, 
+    #     "ca_transit_stops"
+    # )
     
     time1 = datetime.datetime.now()
     print(f"Execution time for stops script: {time1 - time0}")

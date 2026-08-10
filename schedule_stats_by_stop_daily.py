@@ -12,7 +12,7 @@ import pandas as pd
 
 from calitp_data_analysis.geography_utils import WGS84
 from calitp_data_analysis import utils
-from segment_speed_utils import helpers
+import helpers
 
 def stats_for_stop(
     df: pd.DataFrame, 
@@ -124,20 +124,20 @@ def schedule_stats_by_stop(
 
 if __name__ == "__main__":
 
-    from update_vars import analysis_date_list, RT_SCHED_GCS, GTFS_DATA_DICT
+    from update_vars import analysis_date, RT_SCHED_GCS, GTFS_DATA_DICT
     
-    EXPORT_FILE = GTFS_DATA_DICT.rt_vs_schedule_tables.sched_stop_metrics
+    # EXPORT_FILE = GTFS_DATA_DICT.rt_vs_schedule_tables.sched_stop_metrics
+    TEST_EXPORT = 'test_sched_stop_metrics.parquet'
     
-    for analysis_date in analysis_date_list:
-        start = datetime.datetime.now()
-        
-        gdf = schedule_stats_by_stop(analysis_date)
-                
-        utils.geoparquet_gcs_export(
-            gdf,
-            RT_SCHED_GCS,
-            f"{EXPORT_FILE}_{analysis_date}"
-        )
-        
-        end = datetime.datetime.now()
-        print(f"schedule stop stats for {analysis_date}: {end - start}")
+    start = datetime.datetime.now()
+    
+    gdf = schedule_stats_by_stop(analysis_date)
+    gdf.to_parquet(TEST_EXPORT) 
+    # utils.geoparquet_gcs_export(
+    #     gdf,
+    #     RT_SCHED_GCS,
+    #     f"{EXPORT_FILE}_{analysis_date}"
+    # )
+    
+    end = datetime.datetime.now()
+    print(f"schedule stop stats for {analysis_date}: {end - start}")
