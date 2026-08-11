@@ -199,7 +199,7 @@ if __name__ == "__main__":
     start = datetime.datetime.now()
 
     stops = publish_stops(analysis_month)
-
+    stops.to_parquet(f'test_stops_monthly_{analysis_month}.parquet')
     gcs_geopandas().geo_data_frame_to_parquet(stops, f"{OPEN_DATA_GCS}export/ca_transit_stops{analysis_month}.parquet")
     gcs_geopandas().geo_data_frame_to_parquet(stops, f"{OPEN_DATA_GCS}export/ca_transit_stops_latest.parquet")
 

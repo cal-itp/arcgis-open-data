@@ -173,7 +173,7 @@ if __name__ == "__main__":
 
     stops = create_stops_file_for_export(analysis_date)  
     # for testing
-    stops.pipe(add_distance_to_state_highway).pipe(finalize_export_df).to_parquet('test_stops.parquet')
+    stops.pipe(add_distance_to_state_highway).pipe(finalize_export_df).to_parquet(f'test_stops_{analysis_date}.parquet')
 
     # published_stops = (
     # patch_previous_dates(
