@@ -5,16 +5,27 @@ Create `ca_transit_stops` to publish to Geoportal.
 import datetime
 import sys
 
-import gcsfs
 import geopandas as gpd
-import google.auth
 import intake
 import pandas as pd
 from calitp_data_analysis import geography_utils, utils
 from loguru import logger
 from update_vars import OPEN_DATA_GCS, analysis_month
 
-credentials, _ = google.auth.default()
+from functools import cache
+
+from calitp_data_analysis.gcs_geopandas import GCSGeoPandas
+
+@cache
+def gcs_geopandas():
+    return GCSGeoPandas()
+
+from calitp_data_analysis.gcs_pandas import GCSPandas
+
+@cache
+def gcs_pandas():
+    return GCSPandas()
+
 catalog = intake.open_catalog("./_shared_utils/shared_utils/shared_data_catalog.yml")
 
 MONTHLY_STOPS_COLS = [
@@ -143,23 +154,21 @@ def publish_stops(analysis_month: str) -> gpd.GeoDataFrame:
     and merge in bridge table to exclude feeds we don't want to publish.
     """
     stops = (
-        gpd.read_parquet(
+        gcs_geopandas().read_parquet(
             f"{OPEN_DATA_GCS}stops_{analysis_month}.parquet",
-            storage_options={"token": credentials.token},
             columns=MONTHLY_STOPS_COLS,
         )
         .pipe(prep_stops)
         .pipe(add_distance_to_state_highway)
     )
 
-    crosswalk = pd.read_parquet(
+    crosswalk = gcs_pandas().read_parquet(
         f"{OPEN_DATA_GCS}bridge_gtfs_analysis_name_x_ntd.parquet",
         columns=[
             "schedule_gtfs_dataset_name",
             "analysis_name",
             "caltrans_district_full",
         ],
-        filesystem=gcsfs.GCSFileSystem(),
     ).drop_duplicates()  # need this because we might have dupes that differ on other columns in bridge, like organization_source_record_id
 
     # Merge in crosswalk, which will filter out the feeds we don't want to publish
@@ -190,11 +199,9 @@ if __name__ == "__main__":
     start = datetime.datetime.now()
 
     stops = publish_stops(analysis_month)
-
-    utils.geoparquet_gcs_export(
-        stops, OPEN_DATA_GCS, f"export/ca_transit_stops_{analysis_month}"
-    )
-    utils.geoparquet_gcs_export(stops, OPEN_DATA_GCS, "export/ca_transit_stops_latest")
+    stops.to_parquet(f'test_stops_monthly_{analysis_month}.parquet')
+    gcs_geopandas().geo_data_frame_to_parquet(stops, f"{OPEN_DATA_GCS}export/ca_transit_stops{analysis_month}.parquet")
+    gcs_geopandas().geo_data_frame_to_parquet(stops, f"{OPEN_DATA_GCS}export/ca_transit_stops_latest.parquet")
 
     end = datetime.datetime.now()
     logger.info(f"{analysis_month}: export stops: {end - start}")
