@@ -74,20 +74,20 @@ def add_distance_to_state_highway(
     nearest_shn_result = gpd.sjoin_nearest(
         stops[stop_cols + ["geometry"]].to_crs(geography_utils.CA_NAD83Albers_m), 
         shn, 
-        distance_col = "meters_to_shn"
+        distance_col = "meters_to_ca_state_highway"
     ).sort_values(
-        stop_cols + ["meters_to_shn"]
+        stop_cols + ["meters_to_ca_state_highway"]
     ).drop_duplicates(subset = stop_cols).reset_index(drop=True)
 
     stops2 = pd.merge(
         stops,
-        nearest_shn_result[stop_cols + ["meters_to_shn"]],
+        nearest_shn_result[stop_cols + ["meters_to_ca_state_highway"]],
         on = stop_cols,
         how = "inner"
     )
   
     stops2 = stops2.assign(
-        meters_to_shn = stops2.meters_to_shn.round(1)
+        meters_to_ca_state_highway = stops2.meters_to_ca_state_highway.round(1)
     )
     
     return stops2.to_crs(orig_crs)
@@ -151,7 +151,7 @@ def finalize_export_df(df: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
         'n_routes', 'route_ids_served', 'route_types_served', 
         'n_arrivals', 'n_hours_in_service',
         # this is derived column
-        'meters_to_shn'
+        'meters_to_ca_state_highway'
     ]
     agency_ids = ['base64_url', 'caltrans_district']
     
