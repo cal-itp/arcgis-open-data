@@ -13,6 +13,15 @@ import pandas as pd
 from calitp_data_analysis.geography_utils import WGS84
 from calitp_data_analysis import utils
 import helpers
+from update_vars import OPEN_DATA_GCS
+
+from functools import cache
+
+from calitp_data_analysis.gcs_geopandas import GCSGeoPandas
+
+@cache
+def gcs_geopandas():
+    return GCSGeoPandas()
 
 def stats_for_stop(
     df: pd.DataFrame, 
@@ -126,18 +135,14 @@ if __name__ == "__main__":
 
     from update_vars import analysis_date, RT_SCHED_GCS, GTFS_DATA_DICT
     
-    # EXPORT_FILE = GTFS_DATA_DICT.rt_vs_schedule_tables.sched_stop_metrics
-    TEST_EXPORT = 'test_sched_stop_metrics.parquet'
+    EXPORT_FILE = f"{OPEN_DATA_GCS}single_day_stops/sched_stop_metrics_{analysis_date}.parquet"
+    TEST_EXPORT = f'test_sched_stop_metrics_{analysis_date}.parquet'
     
     start = datetime.datetime.now()
     
     gdf = schedule_stats_by_stop(analysis_date)
-    gdf.to_parquet(TEST_EXPORT) 
-    # utils.geoparquet_gcs_export(
-    #     gdf,
-    #     RT_SCHED_GCS,
-    #     f"{EXPORT_FILE}_{analysis_date}"
-    # )
+    # gdf.to_parquet(TEST_EXPORT) 
+    gcs_geopandas().geo_data_frame_to_parquet(gdf, EXPORT_FILE)
     
     end = datetime.datetime.now()
     print(f"schedule stop stats for {analysis_date}: {end - start}")

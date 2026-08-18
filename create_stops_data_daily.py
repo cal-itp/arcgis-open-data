@@ -9,16 +9,20 @@ import pandas as pd
 import yaml
 
 import open_data_utils
-from calitp_data_analysis import geography_utils, utils
+from calitp_data_analysis import geography_utils
 from shared_utils import publish_utils, portfolio_utils
 from update_vars import (analysis_date, 
                          GTFS_DATA_DICT,
-                         TRAFFIC_OPS_GCS, 
-                         RT_SCHED_GCS, SCHED_GCS,
+                         OPEN_DATA_GCS
                         )
 
-import google.auth
-credentials, _ = google.auth.default()
+from functools import cache
+
+from calitp_data_analysis.gcs_geopandas import GCSGeoPandas
+
+@cache
+def gcs_geopandas():
+    return GCSGeoPandas()
 
 catalog = intake.open_catalog("./_shared_utils/shared_utils/shared_data_catalog.yml")
 
@@ -32,17 +36,14 @@ def create_stops_file_for_export(
     time0 = datetime.datetime.now()
 
     # Read in parquets
-    # STOP_FILE = GTFS_DATA_DICT.rt_vs_schedule_tables.sched_stop_metrics
+    STOP_FILE = f"{OPEN_DATA_GCS}single_day_stops/sched_stop_metrics_{date}.parquet"
 
-    # stops = gpd.read_parquet(
-    #     f"{RT_SCHED_GCS}{STOP_FILE}_{date}.parquet",
-    #     storage_options={"token": credentials.token}
-    # )
-    stops = gpd.read_parquet('test_sched_stop_metrics.parquet') 
+    # stops = gpd.read_parquet('test_sched_stop_metrics.parquet') 
+    stops = gcs_geopandas().read_parquet(STOP_FILE) 
     stops2 = portfolio_utils.standardize_operator_info_for_exports(stops, date)
 
     time1 = datetime.datetime.now()
-    print(f"get stops for date: {time1 - time0}")
+    print(f"get stops for {date}: {time1 - time0}")
     
     return stops2
 
@@ -95,14 +96,13 @@ def add_distance_to_state_highway(
 def patch_previous_dates(
     current_stops: gpd.GeoDataFrame,
     current_date: str,
-    published_operators_yaml: str = "../gtfs_funnel/published_operators.yml"
 ) -> gpd.GeoDataFrame:
     """
     Compare to the yaml for what operators we want, and
     patch in previous dates for the 10 or so operators
     that do not have data for this current date.
     """
-    with open(published_operators_yaml) as f:
+    with open("published_operators.yml") as f:
         published_operators_dict = yaml.safe_load(f)
     
     patch_operators_dict = {
@@ -113,12 +113,10 @@ def patch_previous_dates(
     
     partial_dfs = []
 
-    STOP_FILE = GTFS_DATA_DICT.rt_vs_schedule_tables.sched_stop_metrics
-
-    for one_date, operator_list in patch_operators_dict.items():
+    for one_date, _operator_list in patch_operators_dict.items():
         df_to_add = publish_utils.subset_table_from_previous_date(
-            gcs_bucket = RT_SCHED_GCS,
-            filename = STOP_FILE,
+            gcs_bucket = OPEN_DATA_GCS,
+            filename = "single_day_stops/sched_stop_metrics",
             operator_and_dates_dict = patch_operators_dict,
             date = one_date, 
             crosswalk_col = "schedule_gtfs_dataset_key",
@@ -126,6 +124,7 @@ def patch_previous_dates(
         )
         
         partial_dfs.append(df_to_add)
+        print(f"get stops for {one_date}")
 
     patch_stops = pd.concat(partial_dfs, axis=0, ignore_index=True)
 
@@ -173,28 +172,21 @@ if __name__ == "__main__":
 
     stops = create_stops_file_for_export(analysis_date)  
     # for testing
-    stops.pipe(add_distance_to_state_highway).pipe(finalize_export_df).to_parquet(f'test_stops_{analysis_date}.parquet')
+    # stops.pipe(add_distance_to_state_highway).pipe(finalize_export_df).to_parquet(f'test_stops_{analysis_date}.parquet')
 
-    # published_stops = (
-    # patch_previous_dates(
-    #     stops,
-    #     analysis_date,
-    # )
-    
-    # .pipe(portfolio_utils.standardize_operator_info_for_exports, analysis_date)
-    # .pipe(finalize_export_df)
-    # )
-    # utils.geoparquet_gcs_export(
-    #     published_stops,
-    #     TRAFFIC_OPS_GCS,
-    #     f"export/ca_transit_stops_{analysis_date}"
-    # )
-    
-    # utils.geoparquet_gcs_export(
-    #     published_stops, 
-    #     TRAFFIC_OPS_GCS, 
-    #     "ca_transit_stops"
-    # )
+    published_stops = (
+    patch_previous_dates(
+        stops,
+        analysis_date,
+    )
+    .pipe(portfolio_utils.standardize_operator_info_for_exports, analysis_date)
+    .pipe(finalize_export_df)
+    )
+
+    EXPORT_FILE = f"{OPEN_DATA_GCS}single_day_stops/published_stops_{analysis_date}.parquet"
+    EXPORT_FILE_LATEST = f"{OPEN_DATA_GCS}single_day_stops/published_stops_latest.parquet"
+    gcs_geopandas().geo_data_frame_to_parquet(published_stops, EXPORT_FILE)
+    gcs_geopandas().geo_data_frame_to_parquet(published_stops, EXPORT_FILE_LATEST)
     
     time1 = datetime.datetime.now()
     print(f"Execution time for stops script: {time1 - time0}")

@@ -2,7 +2,7 @@ from pathlib import Path
 
 from shared_utils import catalog_utils, rt_dates
 
-analysis_date = rt_dates.DATES["jun2026"]
+analysis_date = rt_dates.DATES["jul2026"]
 analysis_month = "2026-06-01"  # should correspond to first day of month above
 
 GTFS_DATA_DICT = catalog_utils.get_catalog("gtfs_analytics_data")
@@ -13,7 +13,6 @@ RT_SCHED_GCS = GTFS_DATA_DICT.gcs_paths.RT_SCHED_GCS
 SCHED_GCS = GTFS_DATA_DICT.gcs_paths.SCHED_GCS
 TRAFFIC_OPS_GCS = f"{GTFS_DATA_DICT.gcs_paths.GCS}traffic_ops/"
 HQTA_GCS = f"{GTFS_DATA_DICT.gcs_paths.GCS}high_quality_transit_areas/"
-AH_TEST = f"{GTFS_DATA_DICT.gcs_paths.GCS}ah_testing/"
 OPEN_DATA_GCS = "gs://calitp-analytics-data/data-analyses/open_data/"
 
 ESRI_BASE_URL = "https://gisdata.dot.ca.gov/arcgis/rest/services/CHrailroad/"

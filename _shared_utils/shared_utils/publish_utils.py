@@ -113,7 +113,6 @@ def subset_table_from_previous_date(
         past_df = gcs_geopandas().read_parquet(
             f"{gcs_bucket}{filename}_{date}.parquet",
             filters=[[(crosswalk_col, "in", subset_keys)]],
-            storage_options={"token": credentials.token},
         )
 
     return past_df
