@@ -44,6 +44,7 @@ def create_stops_file_for_export(
 
     time1 = datetime.datetime.now()
     print(f"get stops for {date}: {time1 - time0}")
+    print(f'shape: {stops2.shape}')
     
     return stops2
 
@@ -118,13 +119,14 @@ def patch_previous_dates(
             gcs_bucket = OPEN_DATA_GCS,
             filename = "single_day_stops/sched_stop_metrics",
             operator_and_dates_dict = patch_operators_dict,
-            date = one_date, 
+            date = one_date,
             crosswalk_col = "schedule_gtfs_dataset_key",
             data_type = "gdf"
-        )
+        ).pipe(portfolio_utils.standardize_operator_info_for_exports, one_date)
         
         partial_dfs.append(df_to_add)
         print(f"get stops for {one_date}")
+        print(f'shape: {df_to_add.shape}')
 
     patch_stops = pd.concat(partial_dfs, axis=0, ignore_index=True)
 
@@ -174,14 +176,8 @@ if __name__ == "__main__":
     # for testing
     # stops.pipe(add_distance_to_state_highway).pipe(finalize_export_df).to_parquet(f'test_stops_{analysis_date}.parquet')
 
-    published_stops = (
-    patch_previous_dates(
-        stops,
-        analysis_date,
-    )
-    .pipe(portfolio_utils.standardize_operator_info_for_exports, analysis_date)
-    .pipe(finalize_export_df)
-    )
+    published_stops = patch_previous_dates(stops, analysis_date).pipe(finalize_export_df)
+    print(published_stops.shape)
 
     EXPORT_FILE = f"{OPEN_DATA_GCS}single_day_stops/published_stops_{analysis_date}.parquet"
     EXPORT_FILE_LATEST = f"{OPEN_DATA_GCS}single_day_stops/published_stops_latest.parquet"
