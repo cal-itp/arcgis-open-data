@@ -40,7 +40,7 @@ MONTHLY_STOPS_COLS = [
     "geometry",
     "route_type_array",  # renamed to routetypes
     "route_id_array",  # renamed to route_ids_served, use this to calculate n_routes
-    "n_hours_in_service",
+    "daily_n_hours_in_service",
 ]
 
 
@@ -64,7 +64,7 @@ def prep_stops(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
                 "n_days": "sum",
                 "route_type_array": "first",
                 "route_id_array": "first",
-                "n_hours_in_service": "max",  # if these differ, choose the one that's the highest (weekday)
+                "daily_n_hours_in_service": "max",  # if these differ, choose the one that's the highest (weekday)
             }
         )
         .reset_index()
