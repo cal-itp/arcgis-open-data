@@ -13,6 +13,20 @@ from loguru import logger
 from shared_utils import bq_utils
 from update_vars import OPEN_DATA_GCS, analysis_month
 
+from functools import cache
+
+from calitp_data_analysis.gcs_geopandas import GCSGeoPandas
+
+@cache
+def gcs_geopandas():
+    return GCSGeoPandas()
+
+from calitp_data_analysis.gcs_pandas import GCSPandas
+
+@cache
+def gcs_pandas():
+    return GCSPandas()
+
 PROD_PROJECT = "cal-itp-data-infra"
 PROD_MART = "mart_gtfs_rollup"
 
@@ -40,7 +54,8 @@ if __name__ == "__main__":
         geom_type="point",
     )
 
-    utils.geoparquet_gcs_export(monthly_stops, OPEN_DATA_GCS, f"stops_{analysis_month}")
+    gcs_geopandas().geo_data_frame_to_parquet(monthly_stops, f'{OPEN_DATA_GCS}stops_{analysis_month}.parquet')
+    # utils.geoparquet_gcs_export(monthly_stops, OPEN_DATA_GCS, f"stops_{analysis_month}")
 
     t1 = datetime.datetime.now()
     logger.info(f"stops: {analysis_month}: {t1 - start}")
@@ -57,9 +72,10 @@ if __name__ == "__main__":
         geom_type="line",
     )
 
-    utils.geoparquet_gcs_export(
-        monthly_routes, OPEN_DATA_GCS, f"routes_{analysis_month}"
-    )
+    gcs_geopandas().geo_data_frame_to_parquet(monthly_routes, f'{OPEN_DATA_GCS}_routes{analysis_month}.parquet')
+    # utils.geoparquet_gcs_export(
+    #     monthly_routes, OPEN_DATA_GCS, f"routes_{analysis_month}"
+    # )
     t2 = datetime.datetime.now()
     logger.info(f"routes: {analysis_month}: {t2 - t1}")
 
@@ -70,10 +86,11 @@ if __name__ == "__main__":
         date_col=None,
     )
 
-    crosswalk.to_parquet(
-        f"{OPEN_DATA_GCS}bridge_gtfs_analysis_name_x_ntd.parquet",
-        filesystem=gcsfs.GCSFileSystem(),
-    )
+    gcs_pandas().data_frame_to_parquet(crosswalk, f'{OPEN_DATA_GCS}bridge_gtfs_analysis_name_x_ntd.parquet')
+    # crosswalk.to_parquet(
+    #     f"{OPEN_DATA_GCS}bridge_gtfs_analysis_name_x_ntd.parquet",
+    #     filesystem=gcsfs.GCSFileSystem(),
+    # )
 
     end = datetime.datetime.now()
     logger.info(f"crosswalk: {end - t2}")

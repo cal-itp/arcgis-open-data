@@ -1,24 +1,28 @@
 '2026-05-13':
   - Huntington Park Schedule
-  - YARTS Schedule
   - Compton Schedule
 
 '2026-06-10':
   - SLO Peak Transit Schedule
   - Stanford Schedule
-  - Triton Transit Schedule
   - Glendora Schedule
-  - Get Around Town Express Schedule
   - San Diego Schedule
   - Bay Area 511 Santa Cruz Metro Schedule
   - Bay Area 511 Fairfield and Suisun Transit Schedule
-  - Bay Area 511 Petaluma Schedule
   - SLO Schedule
   - Lake Schedule Remix
   - Yurok Schedule
-  - Mountain Transit GMV Schedule
 
 '2026-07-15':
+  - Madera Metro Schedule
+  - Long Beach Schedule
+  - SunLine Avail Schedule
+  - Elk Grove Schedule
+  - North County Schedule
+  - San Pedro Trolley Schedule
+  - SBMTD Schedule
+
+'2026-08-12':
   - Santa Ynez Mecatran Schedule
   - TCRTA Schedule
   - GET Schedule
@@ -38,6 +42,7 @@
   - Cudahy Schedule
   - Inglewood Schedule
   - Lompoc Schedule
+  - Get Around Town Express Schedule
   - Antelope Valley Transit Authority Schedule
   - Big Blue Bus Schedule
   - South San Francisco Schedule
@@ -49,6 +54,7 @@
   - Monterey Salinas Schedule
   - Mariposa Grove Shuttle Schedule
   - Yosemite Valley Shuttle Schedule
+  - YARTS Schedule
   - Riverside Schedule
   - Go West Schedule
   - Yuma Schedule
@@ -72,6 +78,7 @@
   - Bay Area 511 Mission Bay Schedule
   - Bay Area 511 Mountain View Community Shuttle Schedule
   - Bay Area 511 MVGO Schedule
+  - Bay Area 511 Petaluma Schedule
   - Bay Area 511 PresidiGo Schedule
   - Bay Area 511 Rio Vista Delta Breeze Schedule
   - Bay Area 511 Sonoma-Marin Area Rail Transit Schedule
@@ -92,6 +99,8 @@
   - Bay Area 511 Tri-Valley Wheels Schedule
   - Tehama Schedule
   - Victor Valley Schedule
+  - South County Transit Link Schedule
+  - Sacramento Schedule
   - Santa Clarita Schedule
   - Yolobus Schedule
   - CatTracks Schedule
@@ -109,7 +118,6 @@
   - Mountain Transit Schedule
   - Calaveras Schedule
   - Lawndale Schedule
-  - Madera Metro Schedule
   - Corona Schedule
   - Delano Schedule
   - LADPW Schedule
@@ -131,7 +139,7 @@
   - Sage Stage Schedule
   - Siskiyou Schedule
   - DowneyLink Avail Schedule
-  - Long Beach Schedule
+  - Long Beach Transit Water Taxis GTFS Schedule
   - Foothill Schedule
   - Fresno Schedule
   - LA Metro Bus Schedule
@@ -150,17 +158,13 @@
   - Mountain Transit Schedule Remix
   - Nevada County Remix Schedule
   - Humboldt Schedule
-  - SunLine Avail Schedule
   - Roseville Schedule
-  - South County Transit Link Schedule
-  - Elk Grove Schedule
-  - Sacramento Schedule
   - Kings Schedule
   - LA DOT Schedule
   - LAX Shuttles Schedule
   - LAX Flyaway Bus Schedule
-  - North County Schedule
   - Montebello Schedule
+  - Mountain Transit GMV Schedule
   - MV Shuttle Schedule
   - Norwalk Avail Schedule
   - OCTA Schedule
@@ -192,11 +196,10 @@
   - Lawndale Beat GMV Schedule
   - Desert Roadrunner GMV Schedule
   - Ridgecrest Schedule
+  - Triton Transit Schedule
   - Pasadena Schedule
   - Manteca Schedule
   - Imperial Valley Transit Schedule
-  - San Pedro Trolley Schedule
-  - SBMTD Schedule
   - SLORTA Schedule
   - SLO Connexionz Schedule
   - Santa Maria Schedule
